@@ -10,7 +10,8 @@ var userSchema = Schema({
     password: String,
     email: String,
     verified: Boolean,
-    classes: [{type: Schema.Types.ObjectId, ref: 'Class'}]
+    party: {type: Schema.Types.ObjectId, ref: 'Parties'},
+    classes: [{type: Schema.Types.ObjectId, ref: 'Classes'}]
 }, {collection: "users"});
 
 exports.Users = mongoose.model('Users', userSchema);

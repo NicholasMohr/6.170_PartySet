@@ -53,10 +53,29 @@ router.put('/', function (req, res) {
 router.put('/:classid', function(req, res){
 	var Users = models.Users;
 	Users.findOneAndUpdate({
-            "_id": req.id
+            "_id": req.session.userId
         }, {
             $push: {
-                classes: req.id
+                classes: req.classid
+            }
+        }, function (error, document) {
+            if (error) {
+                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+            } else {
+                utils.sendSuccessResponse(res);
+            }
+        }
+
+    });
+});
+
+router.put('delete/:classid', function(req, res){
+	var Users = models.Users;
+	Users.findOneAndUpdate({
+            "_id": req.session.userId
+        }, {
+            $pull: {
+                classes: req.classid
             }
         }, function (error, document) {
             if (error) {
