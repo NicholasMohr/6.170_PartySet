@@ -17,7 +17,7 @@ var isLoggedInOrInvalidBody = function (req, res) {
     return false;
 };
 
-router.post('/', function (req, res) {
+router.put('/', function (req, res) {
     var Users = models.Users;
     if (isLoggedInOrInvalidBody(req, res)) {
         return;
@@ -49,6 +49,24 @@ router.post('/', function (req, res) {
         }
     });
 });
+
+router.put('/:classid', function(req, res){
+	var Users = models.Users;
+	Users.findOneAndUpdate({
+            "_id": req.id
+        }, {
+            $push: {
+                classes: req.id
+            }
+        }, function (error, document) {
+            if (error) {
+                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+            } else {
+                utils.sendSuccessResponse(res);
+            }
+        }
+
+    });
 });
 
 module.exports = router;

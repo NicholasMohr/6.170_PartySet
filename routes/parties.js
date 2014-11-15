@@ -1,13 +1,13 @@
 var express = require('express');
 var router = express.Router();
 
-router.post('/:id', function (req, res) {
+router.put('/:id', function (req, res) {
     var Parties = models.Parties;
-    Polls.findOneAndUpdate({
+    Parties.findOneAndUpdate({
         	"_id": req.id
 	    }, {
             $push: {
-                votes: doc._id
+                users: req.currentUser
             }
         }, function (error, document) {
             if (error) {
