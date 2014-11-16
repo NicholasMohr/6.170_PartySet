@@ -1,0 +1,22 @@
+<div class="col-md-8">
+
+</div>
+<div class="col-md-4">
+	<div role="tabpanel">
+
+		<!-- Nav tabs -->
+		<ul class="nav nav-tabs" role="tablist">
+			<% _.each(user.get("classes"), function(class) { %>
+				<li role="presentation" class="active"><a href="#class_<%= class.get('id') %>" aria-controls="home" role="tab" data-toggle="tab"><%= class.get('number') %></a></li>
+			<% }) %>
+		</ul>
+
+		<!-- Tab panes -->
+		<div class="tab-content">
+			<% _.each(user.get("classes"), function(class) { %>
+				<div role="tabpanel" class="tab-pane active" id="#class_<%= class.get('id') %>">...</div>
+			<% }) %>
+		</div>
+
+	</div>
+</div>

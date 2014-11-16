@@ -1,8 +1,16 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+.navbar-nav {
+	float:none !important;
 }
 
-a {
-  color: #00B7FF;
+.navbar-nav a {
+	cursor:pointer;
+}
+
+.popover {
+	max-width:none;
+	width:500px;
+}
+
+body {
+	padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
 }
