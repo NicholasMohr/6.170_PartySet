@@ -46,7 +46,6 @@ router.put('/:id', function (req, res) {
             }
 
         });
-    });
     Users.update({"_id": req.currentUser._id}, {"party": req.body.id}, function (error, document) {
         if (error) {
             utils.sendErrResponse(res, 500, 'An unknown error occurred.');
@@ -73,7 +72,6 @@ router.delete('/:id', function (req, res) {
             }
 
         });
-    });
     Users.update({"_id": req.currentUser._id}, {"party": req.body.id}, function (error, document) {
         if (error) {
             utils.sendErrResponse(res, 500, 'An unknown error occurred.');

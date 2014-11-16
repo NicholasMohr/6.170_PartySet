@@ -1,22 +1,75 @@
-<div class="col-md-8">
-
+<div id="map-container" class="col-md-8">
+	<div id="new-party" data-toggle="tooltip" data-placement="left" title="New Party"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></div>
+	<div id="map">
+	</div>
 </div>
 <div class="col-md-4">
 	<div role="tabpanel">
 
 		<!-- Nav tabs -->
 		<ul class="nav nav-tabs" role="tablist">
-			<% _.each(user.get("classes"), function(class) { %>
-				<li role="presentation" class="active"><a href="#class_<%= class.get('id') %>" aria-controls="home" role="tab" data-toggle="tab"><%= class.get('number') %></a></li>
+			<% _.each(user.get("courses").models, function(course) { %>
+
+				<li role="presentation" class="class-tab"><a href="#course_<%= course.get('_id') %>" aria-controls="home" role="tab" data-toggle="tab"><%= course.get('number') %></a></li>
 			<% }) %>
 		</ul>
 
 		<!-- Tab panes -->
 		<div class="tab-content">
-			<% _.each(user.get("classes"), function(class) { %>
-				<div role="tabpanel" class="tab-pane active" id="#class_<%= class.get('id') %>">...</div>
+			<% _.each(user.get("courses").models, function(course) { %>
+				<div role="tabpanel" class="tab-pane" id="#course_<%= course.get('_id') %>">...</div>
 			<% }) %>
 		</div>
 
 	</div>
 </div>
+
+<div id="new-party-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h4 class="modal-title">New Party</h4>
+			</div>
+			<div class="modal-body">
+				<form class="form-horizontal" role="form">
+					<div class="form-group">
+						<label for="new-party-course-number" class="col-sm-2 control-label">Course</label>
+						<div class="col-sm-10">
+							<select class="form-control" id="new-party-course-number">
+								<% _.each(user.get("courses").models, function(course) { %>
+								<option value="<%= course.get('number') %>"><%= course.get('number') %></option>
+								<% }); %>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="new-party-location" class="col-sm-2 control-label">Location</label>
+						<div class="col-sm-10">
+							<input class="form-control" id="new-party-location" placeholder="e.g. 4-124">
+						</div>
+					</div>
+					<div class="form-group">
+						<label for="new-party-details" class="col-sm-2 control-label">Other info</label>
+						<div class="col-sm-10">
+							<textarea rows="2" class="form-control" id="new-party-details"></textarea>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-offset-2 col-sm-10">
+							<div class="checkbox">
+								<label>
+									<input type="checkbox"> Remember me
+								</label>
+							</div>
+						</div>
+					</div>
+				</form>
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="button" id="add-party-button" class="btn btn-primary">Add Party</button>
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

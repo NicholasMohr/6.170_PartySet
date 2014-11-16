@@ -66,7 +66,7 @@ router.put('/:classid', function(req, res){
             }
         }
 
-    });
+    );
 });
 
 router.put('delete/:classid', function(req, res){
@@ -85,7 +85,7 @@ router.put('delete/:classid', function(req, res){
             }
         }
 
-    });
+    );
 });
 
 module.exports = router;

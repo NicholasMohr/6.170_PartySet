@@ -1,8 +1,9 @@
 window.LoggedInHeaderView = Backbone.View.extend({
 
     initialize: function (options) {
-        this.render();
         this.user = options.user;
+        this.render();
+
     },
 
     render: function () {

@@ -23,9 +23,11 @@ var AppRouter = Backbone.Router.extend({
     },
 
     home: function () {
-        this.headerView = new LoggedOutHeaderView();
+        var courses = new CourseCollection([{number:"6.170", _id:"r34632fd"}, {number:"6.034", _id:"e534266j63"}]);
+        var user = new User({_id:"f4362652grw", courses:courses, "username":"Jessica"});
+        this.headerView = new LoggedInHeaderView({user:user});
         $('.header').html(this.headerView.el);
-        $('#content').html(new LoggedOutView().el);
+        $('#content').html(new LoggedInView({user:user}).el);
         /*$.ajax({
             url:"session/user",
             type: "GET",

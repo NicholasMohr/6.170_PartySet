@@ -1,78 +1,95 @@
 window.LoggedInView = Backbone.View.extend({
 
-    initialize: function () {
+    initialize: function (options) {
+        this.user = options.user;
         this.render();
+
     },
 
     render: function () {
-        $(this.el).html(this.template());
+        $(this.el).html(this.template({user:this.user}));
+        $('[data-toggle="tooltip"]', $(this.el)).tooltip();
+        this.addingParty = false;
+
+        $(".class-tab:first", $(this.el)).tab("show");
+        $(".tab-pane:first", $(this.el)).addClass("active");
+
+        var mapContainer = $("#map", $(this.el))[0];
+        this.map = L.map(mapContainer, {
+            minZoom: 1,
+            maxZoom: 5,
+            center: [-140, 250],
+            crs: L.CRS.Simple,
+            zoom:3
+        });
+
+        // dimensions of the image
+        var w = 9306,
+            h = 3778,
+            url = '/images/map.png';
+
+        // calculate the edges of the image, in coordinate space
+        var southWest = this.map.unproject([0, h], this.map.getMaxZoom()-1);
+        var northEast = this.map.unproject([w, 0], this.map.getMaxZoom()-1);
+        var bounds = new L.LatLngBounds(southWest, northEast);
+
+        // add the image overlay,
+        // so that it covers the entire map
+        L.imageOverlay(url, bounds).addTo(this.map);
+
+        // tell leaflet that the map is exactly as big as the image
+        this.map.setMaxBounds(bounds);
+
         return this;
-    }
+    },
 
+    events: {
+        "click #new-party":"newParty"
+    },
 
-    var moonTypeOptions = {
-        getTileUrl: function(coord, zoom) {
-            var normalizedCoord = getNormalizedCoord(coord, zoom);
-            if (!normalizedCoord) {
-                return null;
-            }
-            var bound = Math.pow(2, zoom);
-            return 'http://mw1.google.com/mw-planetary/lunar/lunarmaps_v1/clem_bw' +
-                '/' + zoom + '/' + normalizedCoord.x + '/' +
-                (bound - normalizedCoord.y - 1) + '.jpg';
-        },
-        tileSize: new google.maps.Size(256, 256),
-        maxZoom: 9,
-        minZoom: 0,
-        radius: 1738000,
-        name: 'Moon'
-    };
-
-var moonMapType = new google.maps.ImageMapType(moonTypeOptions);
-
-function initialize() {
-    var myLatlng = new google.maps.LatLng(0, 0);
-    var mapOptions = {
-        center: myLatlng,
-        zoom: 1,
-        streetViewControl: false,
-        mapTypeControlOptions: {
-            mapTypeIds: ['moon']
+    newParty: function() {
+        var mapContainer = $("#map", $(this.el));
+        if (!this.addingParty) {
+            this.addingParty = true;
+            $("#new-party", $(this.el)).tooltip("hide");
+            $("#new-party", $(this.el)).attr("data-original-title", "Cancel");
+            $("#new-party span", $(this.el)).css({'-webkit-transform' : 'rotate(135deg)',
+                '-moz-transform' : 'rotate(135deg)',
+                '-ms-transform' : 'rotate(135deg)',
+                'transform' : 'rotate(135deg)'});
+            mapContainer.addClass("adding-party");
+            var self = this;
+            this.map.on('click', function (e) {
+                var coords = e.latlng;
+                mapContainer.removeClass("adding-party");
+                $(this).unbind("click");
+                $("#new-party").attr("data-original-title", "New Party");
+                $("#new-party span", $(self.el)).css({'-webkit-transform' : '',
+                    '-moz-transform' : '',
+                    '-ms-transform' : '',
+                    'transform' : ''});
+                $("#new-party-modal", $(self.el)).modal("show");
+                $("#add-party-button", $(self.el)).on("click", function () {
+                    var icon = L.MakiMarkers.icon({color: "#b0b", size: "m"});
+                    L.marker(coords, {clickable: true, icon: icon}).addTo(self.map)
+                    $("#new-party-modal", $(self.el)).modal("hide");
+                    $(this).unbind("click");
+                });
+            });
+        } else {
+            this.addingParty = false;
+            $("#new-party", $(this.el)).tooltip("hide");
+            $("#new-party").attr("data-original-title", "New Party");
+            mapContainer.removeClass("adding-party");
+            $(this.map).unbind("click");
+            $("#new-party span", $(this.el)).css({'-webkit-transform' : '',
+                '-moz-transform' : '',
+                '-ms-transform' : '',
+                'transform' : ''});
         }
-    };
-
-    var map = new google.maps.Map(document.getElementById('map-canvas'),
-        mapOptions);
-    map.mapTypes.set('moon', moonMapType);
-    map.setMapTypeId('moon');
-}
-
-// Normalizes the coords that tiles repeat across the x axis (horizontally)
-// like the standard Google map tiles.
-function getNormalizedCoord(coord, zoom) {
-    var y = coord.y;
-    var x = coord.x;
-
-    // tile range in one direction range is dependent on zoom level
-    // 0 = 1 tile, 1 = 2 tiles, 2 = 4 tiles, 3 = 8 tiles, etc
-    var tileRange = 1 << zoom;
-
-    // don't repeat across y-axis (vertically)
-    if (y < 0 || y >= tileRange) {
-        return null;
     }
 
-    // repeat across x-axis
-    if (x < 0 || x >= tileRange) {
-        x = (x % tileRange + tileRange) % tileRange;
-    }
 
-    return {
-        x: x,
-        y: y
-    };
-}
 
-google.maps.event.addDomListener(window, 'load', initialize);
 
 });
