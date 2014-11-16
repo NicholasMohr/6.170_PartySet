@@ -33,7 +33,7 @@ router.post('/', function (req, res) {
 //add current user to party
 router.put('/:id', function (req, res) {
     Parties.findOneAndUpdate({
-        	"_id": req.id
+        	"_id": req.body.id
 	    }, {
             $push: {
                 users: req.currentUser
@@ -47,10 +47,38 @@ router.put('/:id', function (req, res) {
 
         });
     });
-    Users.update({"_id": req.session.userId}, {"party": req.id}, function (error, document) {
+    Users.update({"_id": req.currentUser._id}, {"party": req.body.id}, function (error, document) {
         if (error) {
             utils.sendErrResponse(res, 500, 'An unknown error occurred.');
         } else {
+            //TODO: update req.currentUser
+            utils.sendSuccessResponse(res);
+        }
+    });
+});
+
+//remove current user from party
+router.delete('/:id', function (req, res) {
+    Parties.findOneAndUpdate({
+            "_id": req.body.id
+        }, {
+            $pull: {
+                users: req.currentUser
+            }
+        }, function (error, document) {
+            if (error) {
+                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+            } else {
+                utils.sendSuccessResponse(res);
+            }
+
+        });
+    });
+    Users.update({"_id": req.currentUser._id}, {"party": req.body.id}, function (error, document) {
+        if (error) {
+            utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+        } else {
+            //TODO: update req.currentUser
             utils.sendSuccessResponse(res);
         }
     });
