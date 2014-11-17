@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var session = require('express-session');
+var passport = require('passport');
 
 // default to a 'localhost' configuration:
 //var connection_string = 'localhost:27017/fritter';
@@ -38,6 +39,13 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// set up passport
+require('./config/passport-local')(passport);
+app.use(session({ secret: 'partysetallnight' })); // session secret
+app.use(passport.initialize());
+app.use(passport.session());
+
+// routes
 app.use(session({
     secret: 'keyboard cat',
     cookie: {

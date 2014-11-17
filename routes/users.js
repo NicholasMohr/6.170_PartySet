@@ -1,5 +1,7 @@
 var express = require('express');
 var router = express.Router();
+var passport = require('passport');
+var controller = require('../controller/users-controller');
 
 /* GET users listing. */
 router.get('/', function(req, res) {
@@ -17,7 +19,24 @@ var isLoggedInOrInvalidBody = function (req, res) {
     return false;
 };
 
+/*	
+	PUT to sign up
+	Takes a JSON POST body with a desired username (email), password, and name
+	If the username is valid/untaken, a User document will be created and the current user will be logged in.
+	Otherwise, return an error.
+*/
 router.put('/', function (req, res) {
+    // passport.authenticate('local-signup', function(err, user, info){
+    //     if (err)  { return res.status(400).send(err); }
+    //     if (!user) { return res.status(400).send({error:info}); }
+    //     else {
+    //         req.login(user, function(err){
+    //             if (err) return next(err);
+    //             return res.status(201).json({content:{'message': 'Successfully created user', 'user': user}}).end();
+    //         }); 
+    //     }    
+    // })(req, res, next);
+
     var Users = models.Users;
     if (isLoggedInOrInvalidBody(req, res)) {
         return;
@@ -50,42 +69,18 @@ router.put('/', function (req, res) {
     });
 });
 
+/*
+	PUT a class listed for a specific user
+*/
 router.put('/:classid', function(req, res){
-	var Users = models.Users;
-	Users.findOneAndUpdate({
-            "_id": req.session.userId
-        }, {
-            $push: {
-                classes: req.classid
-            }
-        }, function (error, document) {
-            if (error) {
-                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
-            } else {
-                utils.sendSuccessResponse(res);
-            }
-        }
-
-    );
+	controller.addClassToUser(req, res);
 });
 
+/*
+	PUT a class removed from a specific user
+*/
 router.put('delete/:classid', function(req, res){
-	var Users = models.Users;
-	Users.findOneAndUpdate({
-            "_id": req.session.userId
-        }, {
-            $pull: {
-                classes: req.classid
-            }
-        }, function (error, document) {
-            if (error) {
-                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
-            } else {
-                utils.sendSuccessResponse(res);
-            }
-        }
-
-    );
+	controller.removeClassFromUser(req, res);
 });
 
 module.exports = router;
