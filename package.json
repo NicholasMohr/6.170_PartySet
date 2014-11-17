@@ -13,7 +13,10 @@
     "serve-favicon": "~2.1.3",
     "debug": "~2.0.0",
     "jade": "~1.6.0",
-      "mongoose":"*",
-      "express-session":"*"
+    "mongoose":"*",
+    "express-session":"*",
+    "bcrypt":"0.8.0",
+    "passport": "~0.2.0",
+    "passport-local": "~1.0.0"
   }
 }
