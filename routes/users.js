@@ -79,4 +79,13 @@ router.put('delete/:classid', function(req, res){
 	controller.removeClassFromUser(req, res);
 });
 
+/*
+    GET returns whether a user is logged in
+    For internal use only
+*/
+router.get('/loggedin', function(req, res) {
+    if (!req.isAuthenticated()) { return res.status(401).send({'error': 'You are not logged in!'}); }
+    return res.status(200).send({'message': 'User is logged in.'});
+});
+
 module.exports = router;
