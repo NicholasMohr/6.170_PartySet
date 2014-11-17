@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var controller = require('../controller/users-controller');
+var utils = require('../utils/utils');
 
 /* GET users listing. */
 router.get('/', function(req, res) {

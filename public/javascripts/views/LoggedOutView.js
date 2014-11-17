@@ -21,14 +21,14 @@ window.LoggedOutView = Backbone.View.extend({
         $.ajax({
             url:"/users",
             type:"POST",
-            data: {username: username, password: password, name:name},
+            data: {username: username, password: password, name: name},
             success: function() {
-                app.navigate("/", {trigger: true})
+                app.navigate("/", {trigger: true});
             },
             error: function(xhr, status, err) {
                 $("#sign-up-errors").text(err);
             }
-        })
+        });
     }
 
 });

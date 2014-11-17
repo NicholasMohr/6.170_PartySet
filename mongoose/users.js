@@ -8,6 +8,8 @@ var userSchema = Schema({
     verified: Boolean,
     party: {type: Schema.Types.ObjectId, ref: 'Parties'},
     classes: [{type: Schema.Types.ObjectId, ref: 'Classes'}]
-}, {collection: "users"});
+});
+// }, {collection: "users"});
 
-exports.Users = mongoose.model('Users', userSchema);
+// exports.Users = mongoose.model('Users', userSchema);
+module.exports = mongoose.model('Users', userSchema);

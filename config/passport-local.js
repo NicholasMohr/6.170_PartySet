@@ -6,16 +6,16 @@ var User = require('../mongoose/users');
 
 module.exports = function(passport){
   passport.use('local-signup', new LocalStrategy({
-      usernameField: 'email',
+      usernameField: 'username',
       passwordField: 'password',
       passReqToCallback: true
     },
-    function(req, email, password, done) {
+    function(req, username, password, done) {
       process.nextTick(function() {
-        var em = email.toLowerCase();
+        var em = username.toLowerCase();
         
         // check if username is actual email format
-        var re = /^(([^<>()[]\.,;:s@"]+(.[^<>()[]\.,;:s@"]+)*)|(".+"))@(([[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}])|(([a-zA-Z-0-9]+.)+[a-zA-Z]{2,}))$/igm;
+        var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         if (em == '' || !re.test(em)) { return done(null, false, 'Please enter a valid MIT email address.'); }
 
         // check to see if username is MIT email address
@@ -32,7 +32,7 @@ module.exports = function(passport){
             bcrypt.genSalt(10, function(err, salt) {
               bcrypt.hash(p, salt, function(err, hash) {
                 var name = req.body.name;
-                if (!name || /^\s*$/.test(location)) { return done(null, false, 'Please write your name.'); }
+                if (!name || /^\s*$/.test(name)) { return done(null, false, 'Please write your name.'); }
 
                 var newUser = new User({local: {password: hash, email: em}, name: req.body.name, verified: false});
                 newUser.save(function(err, product, numberAffected) {
@@ -51,12 +51,12 @@ module.exports = function(passport){
   }));
   
   passport.use('local-login', new LocalStrategy({
-        usernameField : 'email',
+        usernameField : 'username',
         passwordField : 'password',
         passReqToCallback : true 
     },
-    function(req, email, password, done) { 
-      var em = email.toLowerCase();
+    function(req, username, password, done) { 
+      var em = username.toLowerCase();
 
       User.findOne({'local.username': em}, function(err, user) {
         // check if account with email address exists
