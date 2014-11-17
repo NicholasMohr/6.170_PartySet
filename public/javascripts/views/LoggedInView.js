@@ -170,6 +170,8 @@ window.LoggedInView = Backbone.View.extend({
                             location:$( "#new-party-location", $(self.el)).val(),
                             details:$( "#new-party-details", $(self.el)).val(),
                             coordinates:[coords.lat, coords.lng]
+                        }, success: function(party) {
+
                         }
                     });
                     var icon = L.MakiMarkers.icon({color: "#b0b", size: "m"});

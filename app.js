@@ -45,15 +45,6 @@ app.use(session({ secret: 'partysetallnight' })); // session secret
 app.use(passport.initialize());
 app.use(passport.session());
 
-// routes
-app.use(session({
-    secret: 'keyboard cat',
-    cookie: {
-        maxAge: 36000000,
-        httpOnly: false // <- set httpOnly to false
-    }
-}));
-
 app.use('/', routes);
 app.use('/users', users);
 app.use('/parties', parties);
