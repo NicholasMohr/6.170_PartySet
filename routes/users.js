@@ -27,13 +27,12 @@ var isLoggedInOrInvalidBody = function (req, res) {
 */
 router.post('/', function(req, res, next) {
 	passport.authenticate('local-signup', function(err, user, info) {
-		if (err) { return res.status(400).send(err); }
-		if (!user) { return res.status(400).send({error: info}); }
+		if (err) { utils.sendErrResponse(res, 400, err.message); }
+		if (!user) { utils.sendErrResponse(res, 400, info); }
 		else {
 			req.login(user, function(err) {
 				if (err) { return next(err); }
-				// TODO check if want to use utils success method instead
-				return res.status(201).json({content: {'message': 'Successfully created user', 'user': user}}).end();
+                utils.sendSuccessResponse(res, 'Successfully created user');
 			});
 		}
 	})(req, res, next);
@@ -52,8 +51,7 @@ router.post('/login', function(req, res, next) {
         else {
         	req.login(user, function(err) {
         		if (err) { return next(err); }
-        		// TODO check if want to use utils success method instead
-        		return res.status(200).json({content: {'message': 'Successfully logged in', 'user': user}}).end();
+                utils.sendSuccessResponse(res, 'Successfully logged in');
         	});
         }
     })(req, res, next);
@@ -62,7 +60,7 @@ router.post('/login', function(req, res, next) {
 /* POST to logout */
 router.post('/logout', function(req, res){
     req.logout();
-    res.status(200).send({message: 'Logout successful'});
+    utils.sendSuccessResponse(res, 'Logout successful');
 });
 
 /*
@@ -84,8 +82,8 @@ router.put('delete/:classid', function(req, res){
     For internal use only
 */
 router.get('/loggedin', function(req, res) {
-    if (!req.isAuthenticated()) { return res.status(401).send({'error': 'You are not logged in!'}); }
-    return res.status(200).send({'message': 'User is logged in.'});
+    if (!req.isAuthenticated()) { utils.sendErrResponse(res, 401, 'You are not logged in!'); }
+    utils.sendSuccessResponse(res, 'User is logged in');
 });
 
 module.exports = router;
