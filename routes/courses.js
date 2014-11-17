@@ -19,7 +19,7 @@ router.get('/', function(req, res){
 
 //gives all the parties in a class
 router.get('/:course_id', function (req, res) {
-    Parties.find({course:course_id}, function(err,parties){
+    Parties.find({course : req.params.course_id}, function(err,parties){
         if(err){
             utils.sendErrResponse(res, 500, 'An unexpected error occured.');
         }

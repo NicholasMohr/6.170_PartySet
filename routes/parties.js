@@ -80,7 +80,7 @@ router.put('/:id', function (req, res) {
 
 //remove current user from party
 router.delete('/:id', function (req, res) {
-    if(req.currentUser.party === req.body.id){
+    if(req.currentUser.party === req.params.id){
         Parties.findOneAndUpdate({
                 "_id": req.params.id
             }, {
