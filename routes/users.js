@@ -20,53 +20,49 @@ var isLoggedInOrInvalidBody = function (req, res) {
 };
 
 /*	
-	PUT to sign up
+	POST to sign up
 	Takes a JSON POST body with a desired username (email), password, and name
 	If the username is valid/untaken, a User document will be created and the current user will be logged in.
 	Otherwise, return an error.
 */
-router.put('/', function (req, res) {
-    // passport.authenticate('local-signup', function(err, user, info){
-    //     if (err)  { return res.status(400).send(err); }
-    //     if (!user) { return res.status(400).send({error:info}); }
-    //     else {
-    //         req.login(user, function(err){
-    //             if (err) return next(err);
-    //             return res.status(201).json({content:{'message': 'Successfully created user', 'user': user}}).end();
-    //         }); 
-    //     }    
-    // })(req, res, next);
+router.post('/', function(req, res, next) {
+	passport,authenticate('local-signup', function(err, user, info) {
+		if (err) { return res.status(400).send(err); }
+		if (!user) { return res.status(400).send({error: info}); }
+		else {
+			req.login(user, function(err) {
+				if (err) { return next(err); }
+				// TODO check if want to use utils success method instead
+				return res.status(201).json({content: {'message': 'Successfully created user', 'user': user}}).end();
+			});
+		}
+	})(req, res, next);
+});
 
-    var Users = models.Users;
-    if (isLoggedInOrInvalidBody(req, res)) {
-        return;
-    }
-    
-    var user = new Users({
-        username: req.body.username,
-        password: req.body.password,
-        email: req.body.email,
-        verified: false,
-        classes: []
-    });
-    user.save(function (err, result) {
-        if (err) {
-            // 11000 and 11001 are MongoDB duplicate key error codes
-            if (err.code && (err.code === 11000 || err.code === 11001)) {
-                utils.sendErrResponse(res, 400, 'That username is already taken!');
-            } else {
-                utils.sendErrResponse(res, 500, 'An unknown DB error occurred.');
-            }
-        } else {
-            req.session.userId = result._id;
-            var userSimple = {
-                username: result.username
-            };
-            utils.sendSuccessResponse(res, {
-                    user: userSimple
-            });
+/*
+	POST to login with username/password 
+	Takes a JSON POST body with a username and a password parameter.
+	If the username and password are valid, it will log the user in, otherwise return an error.
+*/
+router.post('/login', function(req, res, next) {
+    passport.authenticate('local-login', function(err, user, info) {
+        console.log(err);
+        if (err) { return next(err); }
+        if (!user) { return next(err); }
+        else {
+        	req.login(user, function(err) {
+        		if (err) { return next(err); }
+        		// TODO check if want to use utils success method instead
+        		return res.status(200).json({content: {'message': 'Successfully logged in', 'user': user}}).end();
+        	});
         }
-    });
+    })(req, res, next);
+});
+
+/* POST to logout */
+router.post('/logout', function(req, res){
+    req.logout();
+    res.status(200).send({message: 'Logout successful'});
 });
 
 /*
