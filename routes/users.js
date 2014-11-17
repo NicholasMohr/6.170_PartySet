@@ -26,7 +26,7 @@ var isLoggedInOrInvalidBody = function (req, res) {
 	Otherwise, return an error.
 */
 router.post('/', function(req, res, next) {
-	passport,authenticate('local-signup', function(err, user, info) {
+	passport.authenticate('local-signup', function(err, user, info) {
 		if (err) { return res.status(400).send(err); }
 		if (!user) { return res.status(400).send({error: info}); }
 		else {

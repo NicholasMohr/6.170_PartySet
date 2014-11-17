@@ -52,3 +52,7 @@ body {
 .course-line.expanded .party-details {
 	display:initial;
 }
+
+.class-tab-panel {
+	padding-top:10px;
+}

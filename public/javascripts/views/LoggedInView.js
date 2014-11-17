@@ -2,12 +2,13 @@ window.LoggedInView = Backbone.View.extend({
 
     initialize: function (options) {
         this.user = options.user;
+        this.courses = options.courses;
         this.render();
 
     },
 
     render: function () {
-        $(this.el).html(this.template({user:this.user}));
+        $(this.el).html(this.template({user:this.user, courses:this.courses}));
         $('[data-toggle="tooltip"]', $(this.el)).tooltip();
         this.addingParty = false;
 
@@ -30,8 +31,13 @@ window.LoggedInView = Backbone.View.extend({
             }
         });
 
-        _.each(this.courses, function(course) {
+        _.each(self.user.courses, function(course) {
             self.refreshTab(course._id);
+        });
+
+        $('#add-new-course', $(this.el)).selectize({
+            create: true,
+            sortField: 'text'
         });
 
         var mapContainer = $("#map", $(this.el))[0];
@@ -78,7 +84,37 @@ window.LoggedInView = Backbone.View.extend({
     },
 
     events: {
-        "click #new-party":"newParty"
+        "click #new-party":"newParty",
+        "click #add-course-button":"addNewCourse",
+        "click #new-class-tab":"clearAddNewCourse"
+    },
+
+    addNewCourse: function(e) {
+        e.preventDefault();
+        var courseId = $('#add-new-course', $(this.el))[0].selectize.getValue();
+        if (courseId != "") {
+            var courseNumber = $($('#add-new-course', $(this.el))[0].selectize.getOption(courseId)).text();
+            var newTab = '<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab">' + courseNumber + '</a></li>';
+            $("#new-class-tab", $(this.el)).before(newTab);
+            var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
+                '<div class="row">'+
+                    '<div class="col-md-7 col-md-offset-1">Location</div>'+
+                    '<div class="col-md-4">Attendees</div>'+
+                '</div>'+
+            '</div>';
+            $("#new-class-panel", $(this.el)).before(newPanel);
+            this.refreshTab(courseId);
+            $("#class-tab-"+courseId, $(this.el)).tab("show");
+            $("#new-class-panel", $(this.el)).removeClass("active");
+            $("#course-panel-"+courseId, $(this.el)).addClass("active");
+        } else {
+            $("#add-course-errors", $(this.el)).text("Please select a course");
+        }
+    },
+
+    clearAddNewCourse: function() {
+        $("#add-course-errors", $(this.el)).text("");
+        $('#add-new-course', $(this.el))[0].selectize.setValue("");
     },
 
     bindMarkerClick: function(marker, party) {

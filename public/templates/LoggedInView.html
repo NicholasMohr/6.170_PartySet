@@ -10,20 +10,43 @@
 		<ul class="nav nav-tabs" role="tablist" data-tabs="tabs">
 			<% _.each(user.courses, function(course) { %>
 
-				<li role="presentation" class="class-tab" id="#class-tab-<%= course._id %>"><a href="#course-panel-<%= course._id %>" aria-controls="#course-panel-<%= course._id %>" role="tab" data-toggle="tab"><%= course.number %></a></li>
+				<li role="presentation" class="class-tab" id="class-tab-<%= course._id %>"><a href="#course-panel-<%= course._id %>" aria-controls="#course-panel-<%= course._id %>" role="tab" data-toggle="tab"><%= course.number %></a></li>
 			<% }) %>
+			<li role="presentation" class="class-tab" id="new-class-tab"><a href="#new-class-panel" aria-controls="#new-class-panel" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-plus"></span></a></li>
 		</ul>
 
 		<!-- Tab panes -->
 		<div class="tab-content">
 			<% _.each(user.courses, function(course) { %>
-				<div role="tabpanel" class="class-tab-panel tab-pane" id="#course-panel-<%= course._id %>">
+				<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-<%= course._id %>">
 					<div class="row">
 						<div class="col-md-7 col-md-offset-1">Location</div>
 						<div class="col-md-4">Attendees</div>
 					</div>
 				</div>
 			<% }) %>
+			<div role="tabpanel" class="class-tab-panel tab-pane" id="new-class-panel">
+				<form class="form-horizontal" role="form">
+					<div class="form-group">
+						<label for="add-new-course" class="col-sm-2 control-label">Course</label>
+						<div class="col-sm-10">
+							<select class="form-control" id="add-new-course" placeholder="Select a course...">
+								<option value="" selected="selected"></option>
+
+								<% _.each(courses, function(course) { %>
+								<option value="<%= course._id %>"><%= course.number %></option>
+								<% }); %>
+							</select>
+						</div>
+					</div>
+					<div class="form-group">
+						<div class="col-sm-offset-2 col-sm-10">
+							<button id="add-course-button" class="btn btn-default">Add Course</button>
+						</div>
+					</div>
+					<p class="bg-danger" id="add-course-errors"></p>
+				</form>
+			</div>
 		</div>
 
 	</div>
