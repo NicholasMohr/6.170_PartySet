@@ -1,24 +1,23 @@
 var express = require('express');
 var router = express.Router();
 
-var Party = require('../mongoose/parties')
+var Parties = require('../mongoose/parties')
 var Users = require('../mongoose/users')
 
 //create new party and add current user to it
 router.post('/', function (req, res) {
     //I doubt this will work    
-    var newParty = new Party(req.body);
+    var newParty = new Parties(req.body);
     newParty.attendees = 1;
     newParty.save(function(err,doc){
         var party_id = doc._id;
 
 
-
-        if(req.currentUser.party) {
+        if(req.user.party){
             //remove user from their current party
             //TODO: change this to a call to delete
-            Party.findOneAndUpdate({
-                    "_id": req.currentUser.party
+            Parties.findOneAndUpdate({
+                    "_id": req.user.party
                 }, {
                     $inc: {
                         users: -1
@@ -29,14 +28,14 @@ router.post('/', function (req, res) {
                     }
                 });
         }
-        req.currentUser.party = party_id;
+        req.user.party = party_id;
         utils.sendSuccessResponse(res);
     });
     
 });
 
 router.get('/', function (req, res) {
-    Party.find({}, function(error, documents) {
+    Parties.find({}, function(error, documents) {
         if (error) {
             utils.sendErrResponse(res, 500, 'An unknown error occurred.');
         } else {
@@ -47,7 +46,7 @@ router.get('/', function (req, res) {
 
 //get all the party info
 router.get('/:id', function (req, res) {
-    Party.findOne({"_id" : req.params.id}, function(err,party){
+    Parties.findOne({"_id" : req.params.id}, function(err,party){
         if(err || party ==null){
             utils.sendErrResponse(res, 404, 'The project could not be found.');
         }
@@ -61,11 +60,11 @@ router.get('/:id', function (req, res) {
 
 //add current user to party
 router.put('/:id', function (req, res) {
-    if(req.currentUser.party){
+    if(req.user.party){
         //TODO: change this to a call to delete
         utils.sendErrResponse(res, 403, "you're already in a party!")
     }
-    Party.findOneAndUpdate({
+    Parties.findOneAndUpdate({
         	"_id": req.params.id
 	    }, {
             $inc: {
@@ -78,11 +77,11 @@ router.put('/:id', function (req, res) {
 
         }
     );
-    Users.update({"_id": req.currentUser._id}, {"party": req.params.id}, function (error, document) {
+    Users.update({"_id": req.user._id}, {"party": req.params.id}, function (error, document) {
         if (error) {
             utils.sendErrResponse(res, 500, 'An unknown error occurred.');
         } else {
-            //TODO: update req.currentUser
+            //TODO: update req.user
             utils.sendSuccessResponse(res);
         }
     });
@@ -90,8 +89,8 @@ router.put('/:id', function (req, res) {
 
 //remove current user from party
 router.delete('/:id', function (req, res) {
-    if(req.currentUser.party === req.body.id){
-        Party.findOneAndUpdate({
+    if(req.user.party === req.params.id){
+        Parties.findOneAndUpdate({
                 "_id": req.params.id
             }, {
                 $inc: {
@@ -104,11 +103,11 @@ router.delete('/:id', function (req, res) {
             }
 
         );
-        Users.update({"_id": req.currentUser._id}, {"party": null}, function (error, document) {
+        Users.update({"_id": req.user._id}, {"party": null}, function (error, document) {
             if (error) {
                 utils.sendErrResponse(res, 500, 'An unknown error occurred.');
             } else {
-                //TODO: update req.currentUser
+                //TODO: update req.user
                 utils.sendSuccessResponse(res);
             }
         });
