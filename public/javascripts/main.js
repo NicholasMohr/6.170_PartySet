@@ -26,36 +26,33 @@ var AppRouter = Backbone.Router.extend({
         var allCourses = [{number:"6.170", _id:"r34632fd"}, {number:"6.034", _id:"e534266j63"}, {number:"6.046", _id:"e5342grej63"}, {number:"6.172", _id:"e534264263"}]
         var courses = [{number:"6.170", _id:"r34632fd"}, {number:"6.034", _id:"e534266j63"}]
         var user = {_id:"f4362652grw", courses:courses, "username":"jessmand@mit.edu", name:"Jessica"};
-        this.headerView = new LoggedInHeaderView({user:user});
+        /*this.headerView = new LoggedInHeaderView({user:user});
         $('.header').html(this.headerView.el);
-        $('#content').html(new LoggedInView({user:user, courses:allCourses}).el);
-        /*$.ajax({
-            url:"session/user",
+        $('#content').html(new LoggedInView({user:user, courses:allCourses}).el);*/
+        $.ajax({
+            url:"loggedIn",
             type: "GET",
-            dataType: "json",
             success: function(user) {
                 $('.header').html(new LoggedInHeaderView({user:user}).el);
-                $('#content').html(new LoggedInView({user:user}).el);
+                $('#content').html(new LoggedInView({user:user, courses:allCourses}).el);
             },
             error: function() {
                 $('.header').html(new LoggedOutHeaderView().el);
                 $('#content').html(new LoggedOutView().el);
             }
-        });*/
+        });
 
     },
 
     notFound: function() {
         $.ajax({
-            url: "session/user",
+            url:"loggedIn",
             type: "GET",
-            dataType: "json",
-            success: function (user) {
+            success: function(user) {
                 $('.header').html(new LoggedInHeaderView({user:user}).el);
-                $('.header').html(this.headerView.el);
-            }, error: function (xhr, status, err) {
+            },
+            error: function() {
                 $('.header').html(new LoggedOutHeaderView().el);
-                $('.header').html(this.headerView.el);
             }
         });
         $('#content').html("<h1>Page not found</h1>");
