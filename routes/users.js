@@ -28,8 +28,8 @@ var isLoggedInOrInvalidBody = function (req, res) {
 */
 router.post('/', function(req, res, next) {
 	passport.authenticate('local-signup', function(err, user, info) {
-		if (err) { utils.sendErrResponse(res, 400, err.message); }
-		if (!user) { utils.sendErrResponse(res, 400, info); }
+		if (err) { utils.sendErrResponse(res, 400, err.message);}
+		if (!user) { utils.sendErrResponse(res, 400, info);}
 		else {
 			req.login(user, function(err) {
 				if (err) { return next(err); }

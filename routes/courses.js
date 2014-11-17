@@ -4,6 +4,7 @@ var router = express.Router();
 var Parties = require('../mongoose/parties')
 var Users = require('../mongoose/users')
 var Courses = require('../mongoose/courses')
+var utils = require('../utils/utils');
 
 //gives all classes
 router.get('/', function(req, res){
@@ -29,6 +30,20 @@ router.get('/:course_id', function (req, res) {
     })
     
 });
+
+//make a new class
+router.post('/', function(req,res){
+    console.log(req.body);
+    var newCourse = new Courses(req.body);
+    newCourse.save(function(err,doc){
+        if(err){
+            utils.sendErrResponse(res, 500, 'An unexpected error occured.');
+        }
+        else{
+            utils.sendSuccessResponse(res);
+        }
+    })
+})
 
 
 

@@ -3,34 +3,38 @@ var router = express.Router();
 
 var Parties = require('../mongoose/parties')
 var Users = require('../mongoose/users')
+var utils = require('../utils/utils');
 
 //create new party and add current user to it
 router.post('/', function (req, res) {
     //I doubt this will work    
-    var newParty = new Parties(req.body);
-    newParty.attendees = 1;
-    newParty.save(function(err,doc){
-        var party_id = doc._id;
+    if(req.user){
+        var newParty = new Parties(req.body);
+        newParty.attendees = 1;
+        newParty.save(function(err,doc){
+            var party_id = doc._id;
 
 
-        if(req.user.party){
-            //remove user from their current party
-            //TODO: change this to a call to delete
-            Parties.findOneAndUpdate({
-                    "_id": req.user.party
-                }, {
-                    $inc: {
-                        users: -1
-                    }
-                }, function (error, document) {
-                    if (error) {
-                        utils.sendErrResponse(res, 500, 'An unknown error occurred.');
-                    }
-                });
-        }
-        req.user.party = party_id;
-        utils.sendSuccessResponse(res);
-    });
+            if(req.user.party){
+                //remove user from their current party
+                //TODO: change this to a call to delete
+                Parties.findOneAndUpdate({
+                        "_id": req.user.party
+                    }, {
+                        $inc: {
+                            users: -1
+                        }
+                    }, function (error, document) {
+                        if (error) {
+                            utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                        }
+                    });
+            }
+            req.user.party = party_id;
+            utils.sendSuccessResponse(res);
+        });
+    }
+    
     
 });
 
