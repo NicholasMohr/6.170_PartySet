@@ -12,7 +12,27 @@ window.LoggedInView = Backbone.View.extend({
         this.addingParty = false;
 
         $(".class-tab:first", $(this.el)).tab("show");
-        $(".tab-pane:first", $(this.el)).addClass("active");
+        $(".class-tab-panel:first", $(this.el)).addClass("active");
+        var self = this;
+        $( "#new-party-duration", $(this.el) ).slider({
+            value:2,
+            min:.5,
+            max: 12,
+            step:.5,
+            slide: function( event, ui ) {
+                var val = ui.value;
+                var text = $("#new-party-duration-text", $(self.el));
+                if (val % 1.0 == 0) {
+                    text.text(val+" hours");
+                } else {
+                    text.text((val-.5)+" hours 30 minutes");
+                }
+            }
+        });
+
+        _.each(this.courses, function(course) {
+            self.refreshTab(course._id);
+        });
 
         var mapContainer = $("#map", $(this.el))[0];
         this.map = L.map(mapContainer, {
@@ -40,11 +60,85 @@ window.LoggedInView = Backbone.View.extend({
         // tell leaflet that the map is exactly as big as the image
         this.map.setMaxBounds(bounds);
 
+        $.ajax({
+            method:"GET",
+            url:"/parties",
+            success: function(parties) {
+                _.each(parties, function(party) {
+                    var icon = L.MakiMarkers.icon({color: "#b0b", size: "m"});
+                    var latLng = L.latLng(party.coordinates[0], party.coordinates[1]);
+                    var marker = L.marker(latLng, {clickable: true, icon: icon});
+                    marker.addTo(self.map);
+                    self.bindMarkerClick(marker, party);
+                });
+            }
+        });
+
         return this;
     },
 
     events: {
         "click #new-party":"newParty"
+    },
+
+    bindMarkerClick: function(marker, party) {
+        var self = this;
+        marker.on("click", function() {
+            $("#class-tab-"+party.course._id, $(this.el)).tab("show");
+            self.openPartyDetails(party._id);
+        });
+    },
+
+    refreshTab: function(courseId) {
+        var tabPanel = $("#course-panel-"+courseId, $(this.el));
+        $(".course-line", tabPanel).remove();
+        var self = this;
+        $.ajax({
+            method:"GET",
+            url:"/parties/"+courseId,
+            success: function(parties) {
+                _.each(parties, function(party) {
+                    tabPanel.append(self.newPartyLine(party));
+                })
+            }
+        })
+    },
+
+    newPartyLine: function(party) {
+        var line = $('<div class="row course-line" id="party-line-'+party._id+'"></div>');
+        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right"></span></div><div class="col-md-7">'+party.location+'</div><div class="col-md-4">'+party.attendees+'</div>');
+        var otherContent = $('<div class="party-details"><div class="col-md-7 col-md-offset-1">'+party.details+'</div><div class="col-md-4"><button id="join-'+party._id+'">Join</button></div></div>');
+        line.append(mainContent).append(otherContent);
+        return line;
+    },
+
+    openPartyDetails: function(partyId) {
+        var line = $("#party-line-"+partyId, $(this.el));
+        $(".glyphicon", line).removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-down");
+        line.addClass("expanded");
+    },
+
+    closePartyDetails: function(partyId) {
+        var line = $("#party-line-"+partyId, $(this.el));
+        $(".glyphicon", line).removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-right");
+        line.removeClass("expanded");
+    },
+
+    clearNewParty: function() {
+        this.addingParty = false;
+        $("#new-party", $(this.el)).tooltip("hide");
+        $("#new-party").attr("data-original-title", "New Party");
+        $("#map", $(this.el)).removeClass("adding-party");
+        $(this.map).unbind("click");
+        $("#new-party span", $(this.el)).css({'-webkit-transform' : '',
+            '-moz-transform' : '',
+            '-ms-transform' : '',
+            'transform' : ''});
+        $( "#new-party-duration", $(this.el)).slider("value",2);
+        $( "#new-party-course-number", $(this.el))[0].selectedIndex = 0;
+        $( "#new-party-location", $(this.el)).val("");
+        $( "#new-party-details", $(this.el)).val("");
+        $("#new-party-duration-text", $(this.el)).text("2 hours");
     },
 
     newParty: function() {
@@ -60,32 +154,32 @@ window.LoggedInView = Backbone.View.extend({
             mapContainer.addClass("adding-party");
             var self = this;
             this.map.on('click', function (e) {
+
                 var coords = e.latlng;
-                mapContainer.removeClass("adding-party");
-                $(this).unbind("click");
-                $("#new-party").attr("data-original-title", "New Party");
-                $("#new-party span", $(self.el)).css({'-webkit-transform' : '',
-                    '-moz-transform' : '',
-                    '-ms-transform' : '',
-                    'transform' : ''});
+                self.clearNewParty();
                 $("#new-party-modal", $(self.el)).modal("show");
                 $("#add-party-button", $(self.el)).on("click", function () {
+                    var endTime = new Date();
+                    endTime.setHours(endTime.getHours+$( "#new-party-duration", $(self.el))[0].value);
+                    $.ajax({
+                        method:"POST",
+                        url:"/parties",
+                        data: {
+                            endTime:endTime,
+                            course:$("#new-party-course-number", $(self.el)).val(),
+                            location:$( "#new-party-location", $(self.el)).val(),
+                            details:$( "#new-party-details", $(self.el)).val(),
+                            coordinates:[coords.lat, coords.lng]
+                        }
+                    });
                     var icon = L.MakiMarkers.icon({color: "#b0b", size: "m"});
-                    L.marker(coords, {clickable: true, icon: icon}).addTo(self.map)
+                    L.marker(coords, {clickable: true, icon: icon}).addTo(self.map);
                     $("#new-party-modal", $(self.el)).modal("hide");
                     $(this).unbind("click");
                 });
             });
         } else {
-            this.addingParty = false;
-            $("#new-party", $(this.el)).tooltip("hide");
-            $("#new-party").attr("data-original-title", "New Party");
-            mapContainer.removeClass("adding-party");
-            $(this.map).unbind("click");
-            $("#new-party span", $(this.el)).css({'-webkit-transform' : '',
-                '-moz-transform' : '',
-                '-ms-transform' : '',
-                'transform' : ''});
+            this.clearNewParty();
         }
     }
 
