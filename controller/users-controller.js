@@ -3,6 +3,19 @@ var mongoose = require('mongoose');
 
 var controller = function(){
     return {
+        /*
+            Returns logged in user if there is a user logged in
+        */
+        getCurrentUser: function(req, res) {
+            if (!req.isAuthenticated()) { utils.sendErrResponse(res, 401, 'You are not logged in!'); }
+            User.findById(req.user._id.toString(), 'classes').populate('classes', 'name').exec(function(err, u){
+                if (err) {
+                    utils.sendErrResponse(res, 400, err.message);
+                } else {
+                    return utils.sendSuccessResponse({'classes': u.classes, 'name': u.name, 'id': req.user._id.toString()});
+                }
+            });
+        },
 
         /*
             Add a class to a user
