@@ -15,12 +15,13 @@ window.LoggedOutView = Backbone.View.extend({
 
     signUp: function(e) {
         e.preventDefault();
-        var email = $("#sign-up-email", $(this.el)).val();
+        var username = $("#sign-up-email", $(this.el)).val();
         var password = $("#sign-up-password", $(this.el)).val();
+        var name = $("#sign-up-name", $(this.el)).val();
         $.ajax({
-            url:"sessions/signUp",
+            url:"/users",
             type:"POST",
-            data: {email: email, password: password},
+            data: {username: username, password: password, name:name},
             success: function() {
                 app.navigate("/", {trigger: true})
             },

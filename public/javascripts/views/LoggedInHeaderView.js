@@ -18,7 +18,7 @@ window.LoggedInHeaderView = Backbone.View.extend({
 
     signOut: function(e) {
         $.ajax({
-            url:"sessions/signOut",
+            url:"/logout",
             type:"POST",
             complete: function() {
                 app.navigate("/", {trigger: true})

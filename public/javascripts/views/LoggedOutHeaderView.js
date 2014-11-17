@@ -26,12 +26,12 @@ window.LoggedOutHeaderView = Backbone.View.extend({
 
     signIn: function(e) {
         e.preventDefault();
-        var email = $("#sign-in-email", $(this.el)).val();
+        var username = $("#sign-in-email", $(this.el)).val();
         var password = $("#sign-in-password", $(this.el)).val();
         $.ajax({
-            url:"sessions/signIn",
+            url:"/login",
             type:"POST",
-            data: {email: email, password: password},
+            data: {username: username, password: password},
             success: function() {
                 app.navigate("/", {trigger: true})
             },

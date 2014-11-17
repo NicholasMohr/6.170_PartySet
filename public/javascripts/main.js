@@ -25,7 +25,7 @@ var AppRouter = Backbone.Router.extend({
     home: function () {
         var allCourses = [{number:"6.170", _id:"r34632fd"}, {number:"6.034", _id:"e534266j63"}, {number:"6.046", _id:"e5342grej63"}, {number:"6.172", _id:"e534264263"}]
         var courses = [{number:"6.170", _id:"r34632fd"}, {number:"6.034", _id:"e534266j63"}]
-        var user = {_id:"f4362652grw", courses:courses, "username":"Jessica"};
+        var user = {_id:"f4362652grw", courses:courses, "username":"jessmand@mit.edu", name:"Jessica"};
         this.headerView = new LoggedInHeaderView({user:user});
         $('.header').html(this.headerView.el);
         $('#content').html(new LoggedInView({user:user, courses:allCourses}).el);
