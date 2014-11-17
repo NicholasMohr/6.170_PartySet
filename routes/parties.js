@@ -35,6 +35,20 @@ router.post('/', function (req, res) {
     
 });
 
+//get all the party info
+router.get('/:id', function (req, res) {
+    Parties.findOne({"_id" : req.params.id}, function(err,party){
+        if(err || party ==null){
+            utils.sendErrResponse(res, 404, 'The project could not be found.');
+        }
+        else{
+            res.json(party);
+        }
+    })
+
+});
+
+
 //add current user to party
 router.put('/:id', function (req, res) {
     if(req.currentUser.party){
@@ -42,7 +56,7 @@ router.put('/:id', function (req, res) {
         utils.sendErrResponse(res, 403, "you're already in a party!")
     }
     Parties.findOneAndUpdate({
-        	"_id": req.body.id
+        	"_id": req.params.id
 	    }, {
             $inc: {
                 users: 1
@@ -54,7 +68,7 @@ router.put('/:id', function (req, res) {
 
         }
     );
-    Users.update({"_id": req.currentUser._id}, {"party": req.body.id}, function (error, document) {
+    Users.update({"_id": req.currentUser._id}, {"party": req.params.id}, function (error, document) {
         if (error) {
             utils.sendErrResponse(res, 500, 'An unknown error occurred.');
         } else {
@@ -68,7 +82,7 @@ router.put('/:id', function (req, res) {
 router.delete('/:id', function (req, res) {
     if(req.currentUser.party === req.body.id){
         Parties.findOneAndUpdate({
-                "_id": req.body.id
+                "_id": req.params.id
             }, {
                 $inc: {
                     users: -1
