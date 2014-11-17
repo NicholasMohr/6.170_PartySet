@@ -79,8 +79,11 @@ router.put('delete/:classid', function(req, res){
     For internal use only
 */
 router.get('/loggedin', function(req, res) {
-    if (!req.isAuthenticated()) { utils.sendErrResponse(res, 401, 'You are not logged in!'); }
-    utils.sendSuccessResponse(res, 'User is logged in');
+    if (!req.isAuthenticated()) {
+        utils.sendErrResponse(res, 401, 'You are not logged in!');
+    } else {
+        utils.sendSuccessResponse(res, 'User is logged in');
+    }
 });
 
 module.exports = router;

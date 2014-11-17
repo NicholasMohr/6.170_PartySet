@@ -19,10 +19,10 @@ window.LoggedInHeaderView = Backbone.View.extend({
     signOut: function(e) {
         $.ajax({
             url:"/users/logout",
-            type:"POST",
-            complete: function() {
-                app.navigate("/", {trigger: true})
-            }
+            type:"POST"
+        }).done(function(data) {
+            Backbone.history.navigate("/");
+            window.location.reload();
         })
     },
 

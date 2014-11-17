@@ -23,7 +23,8 @@ window.LoggedOutView = Backbone.View.extend({
             type:"POST",
             data: {username: username, password: password, name: name},
             success: function() {
-                app.navigate("/", {trigger: true});
+                Backbone.history.navigate("/");
+                window.location.reload();
             },
             error: function(xhr, status, err) {
                 $("#sign-up-errors").text(err);
