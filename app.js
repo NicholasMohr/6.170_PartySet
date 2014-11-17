@@ -4,11 +4,9 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
-<<<<<<< HEAD
-var passport = require('passport');
-=======
 var mongoose = require('mongoose');
 var session = require('express-session');
+var passport = require('passport');
 
 // default to a 'localhost' configuration:
 //var connection_string = 'localhost:27017/fritter';
@@ -22,7 +20,6 @@ if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
         process.env.OPENSHIFT_APP_NAME;
 }
 mongoose.connect(connection_string);
->>>>>>> 0a650a48c05afa500b18f1c51e40986b9662b4bb
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -42,7 +39,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-<<<<<<< HEAD
 // set up passport
 require('./config/passport-local')(passport);
 app.use(session({ secret: 'partysetallnight' })); // session secret
@@ -50,7 +46,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // routes
-=======
 app.use(session({
     secret: 'keyboard cat',
     cookie: {
@@ -59,7 +54,6 @@ app.use(session({
     }
 }));
 
->>>>>>> 0a650a48c05afa500b18f1c51e40986b9662b4bb
 app.use('/', routes);
 app.use('/users', users);
 app.use('/parties', parties);
