@@ -17,7 +17,24 @@ var isLoggedInOrInvalidBody = function (req, res) {
     return false;
 };
 
+/*	
+	PUT to sign up
+	Takes a JSON POST body with a desired username (email), password, and name
+	If the username is valid/untaken, a User document will be created and the current user will be logged in.
+	Otherwise, return an error.
+*/
 router.put('/', function (req, res) {
+    // passport.authenticate('local-signup', function(err, user, info){
+    //     if (err)  { return res.status(400).send(err); }
+    //     if (!user) { return res.status(400).send({error:info}); }
+    //     else {
+    //         req.login(user, function(err){
+    //             if (err) return next(err);
+    //             return res.status(201).json({content:{'message': 'Successfully created user', 'user': user}}).end();
+    //         }); 
+    //     }    
+    // })(req, res, next);
+
     var Users = models.Users;
     if (isLoggedInOrInvalidBody(req, res)) {
         return;
