@@ -9,7 +9,7 @@ router.get('/', function(req, res) {
 });
 
 var isLoggedInOrInvalidBody = function (req, res) {
-    if (req.currentUser) {
+    if (req.user) {
         utils.sendErrResponse(res, 403, 'There is already a user logged in.');
         return true;
     } else if (!(req.body.username && req.body.password)) {

@@ -12,11 +12,11 @@ router.post('/', function (req, res) {
     newParty.save(function(err,doc){
         var party_id = doc._id;
 
-        if(req.currentUser.party){
+        if(req.user.party){
             //remove user from their current party
             //TODO: change this to a call to delete
             Parties.findOneAndUpdate({
-                    "_id": req.currentUser.party
+                    "_id": req.user.party
                 }, {
                     $inc: {
                         users: -1
@@ -29,7 +29,7 @@ router.post('/', function (req, res) {
 
             );
         }
-        req.currentUser.party = party_id;
+        req.user.party = party_id;
         utils.sendSuccessResponse(res);
     });
     
@@ -51,7 +51,7 @@ router.get('/:id', function (req, res) {
 
 //add current user to party
 router.put('/:id', function (req, res) {
-    if(req.currentUser.party){
+    if(req.user.party){
         //TODO: change this to a call to delete
         utils.sendErrResponse(res, 403, "you're already in a party!")
     }
@@ -68,11 +68,11 @@ router.put('/:id', function (req, res) {
 
         }
     );
-    Users.update({"_id": req.currentUser._id}, {"party": req.params.id}, function (error, document) {
+    Users.update({"_id": req.user._id}, {"party": req.params.id}, function (error, document) {
         if (error) {
             utils.sendErrResponse(res, 500, 'An unknown error occurred.');
         } else {
-            //TODO: update req.currentUser
+            //TODO: update req.user
             utils.sendSuccessResponse(res);
         }
     });
@@ -80,7 +80,7 @@ router.put('/:id', function (req, res) {
 
 //remove current user from party
 router.delete('/:id', function (req, res) {
-    if(req.currentUser.party === req.params.id){
+    if(req.user.party === req.params.id){
         Parties.findOneAndUpdate({
                 "_id": req.params.id
             }, {
@@ -94,11 +94,11 @@ router.delete('/:id', function (req, res) {
             }
 
         );
-        Users.update({"_id": req.currentUser._id}, {"party": null}, function (error, document) {
+        Users.update({"_id": req.user._id}, {"party": null}, function (error, document) {
             if (error) {
                 utils.sendErrResponse(res, 500, 'An unknown error occurred.');
             } else {
-                //TODO: update req.currentUser
+                //TODO: update req.user
                 utils.sendSuccessResponse(res);
             }
         });
