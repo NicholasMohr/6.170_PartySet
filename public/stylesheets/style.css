@@ -44,3 +44,11 @@ body {
 	-o-transition: 1s ease-in-out;
 	transition: 1s ease-in-out;
 }
+
+.course-line .party-details {
+	display:none;
+}
+
+.course-line.expanded .party-details {
+	display:initial;
+}

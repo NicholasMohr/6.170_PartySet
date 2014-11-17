@@ -7,15 +7,9 @@ var Users = require('../mongoose/users')
 //create new party and add current user to it
 router.post('/', function (req, res) {
     //first check if user is already attending a party
-    var newParty = new Parties({
-        location_name: req.body.location_name,
-        location_details: req.body.location_details,
-        coordinates: req.body.coordinates,
-        end_time: req.body.end_time,
-        users: [req.currentUser]
-    });
+    var newParty = new Party(req.body);
     newParty.save(function(err,doc){
-        party_id = doc._id;
+        var party_id = doc._id;
 
         if(req.currentUser.party){
             //remove user from their current party
@@ -92,3 +86,5 @@ router.delete('/:id', function (req, res) {
         }
     });
 });
+
+module.exports = router;

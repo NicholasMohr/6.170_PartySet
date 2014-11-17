@@ -7,17 +7,22 @@
 	<div role="tabpanel">
 
 		<!-- Nav tabs -->
-		<ul class="nav nav-tabs" role="tablist">
-			<% _.each(user.get("courses").models, function(course) { %>
+		<ul class="nav nav-tabs" role="tablist" data-tabs="tabs">
+			<% _.each(user.courses, function(course) { %>
 
-				<li role="presentation" class="class-tab"><a href="#course_<%= course.get('_id') %>" aria-controls="home" role="tab" data-toggle="tab"><%= course.get('number') %></a></li>
+				<li role="presentation" class="class-tab" id="#class-tab-<%= course._id %>"><a href="#course-panel-<%= course._id %>" aria-controls="#course-panel-<%= course._id %>" role="tab" data-toggle="tab"><%= course.number %></a></li>
 			<% }) %>
 		</ul>
 
 		<!-- Tab panes -->
 		<div class="tab-content">
-			<% _.each(user.get("courses").models, function(course) { %>
-				<div role="tabpanel" class="tab-pane" id="#course_<%= course.get('_id') %>">...</div>
+			<% _.each(user.courses, function(course) { %>
+				<div role="tabpanel" class="class-tab-panel tab-pane" id="#course-panel-<%= course._id %>">
+					<div class="row">
+						<div class="col-md-7 col-md-offset-1">Location</div>
+						<div class="col-md-4">Attendees</div>
+					</div>
+				</div>
 			<% }) %>
 		</div>
 
@@ -37,8 +42,8 @@
 						<label for="new-party-course-number" class="col-sm-2 control-label">Course</label>
 						<div class="col-sm-10">
 							<select class="form-control" id="new-party-course-number">
-								<% _.each(user.get("courses").models, function(course) { %>
-								<option value="<%= course.get('number') %>"><%= course.get('number') %></option>
+								<% _.each(user.courses, function(course) { %>
+								<option value="<%= course._id %>"><%= course.number %></option>
 								<% }); %>
 							</select>
 						</div>
@@ -56,12 +61,10 @@
 						</div>
 					</div>
 					<div class="form-group">
-						<div class="col-sm-offset-2 col-sm-10">
-							<div class="checkbox">
-								<label>
-									<input type="checkbox"> Remember me
-								</label>
-							</div>
+						<label for="new-party-duration" class="col-sm-2 control-label">Time length (hours)</label>
+						<div class="col-sm-10">
+							<div id="new-party-duration"></div>
+							<span id="new-party-duration-text">2 hours</span>
 						</div>
 					</div>
 				</form>
