@@ -30,7 +30,7 @@ var AppRouter = Backbone.Router.extend({
         $('.header').html(this.headerView.el);
         $('#content').html(new LoggedInView({user:user, courses:allCourses}).el);*/
         $.ajax({
-            url:"loggedIn",
+            url:"/users/loggedin",
             type: "GET",
             success: function(user) {
                 $('.header').html(new LoggedInHeaderView({user:user}).el);
@@ -46,7 +46,7 @@ var AppRouter = Backbone.Router.extend({
 
     notFound: function() {
         $.ajax({
-            url:"loggedIn",
+            url:"/users/loggedin",
             type: "GET",
             success: function(user) {
                 $('.header').html(new LoggedInHeaderView({user:user}).el);
