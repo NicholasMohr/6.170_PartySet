@@ -64,16 +64,12 @@ router.post('/logout', function(req, res){
     utils.sendSuccessResponse(res, 'Logout successful');
 });
 
-/*
-	PUT a class listed for a specific user
-*/
+/* PUT a class listed for a specific user */
 router.put('/:classid', function(req, res){
 	controller.addClassToUser(req, res);
 });
 
-/*
-	PUT a class removed from a specific user
-*/
+/* PUT a class removed from a specific user */
 router.put('delete/:classid', function(req, res){
 	controller.removeClassFromUser(req, res);
 });

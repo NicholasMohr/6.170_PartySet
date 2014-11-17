@@ -21,7 +21,7 @@ module.exports = function(passport){
         // check to see if username is MIT email address
         if (em.split("@").pop() != "mit.edu") { return done(null, false, 'Please enter a valid MIT email address.'); }
 
-        User.findOne({'local.username': em}, function(err, user) {
+        User.findOne({'email': em}, function(err, user) {
           // if there are any errors, return the error
           if (err) { return done({error: err}); }
           // if user with given email already exists in database
@@ -34,7 +34,7 @@ module.exports = function(passport){
                 var name = req.body.name;
                 if (!name || /^\s*$/.test(name)) { return done(null, false, 'Please write your name.'); }
 
-                var newUser = new User({local: {password: hash, email: em}, name: req.body.name, verified: false});
+                var newUser = new User({name: req.body.name, verified: false, password: hash, email: em});
                 newUser.save(function(err, product, numberAffected) {
                   if (err) {
                     return done(null, false, err);
