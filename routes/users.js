@@ -1,5 +1,7 @@
 var express = require('express');
 var router = express.Router();
+var passport = require('passport');
+var controller = require('../controller/users-controller');
 
 /* GET users listing. */
 router.get('/', function(req, res) {
@@ -67,42 +69,18 @@ router.put('/', function (req, res) {
     });
 });
 
+/*
+	PUT a class listed for a specific user
+*/
 router.put('/:classid', function(req, res){
-	var Users = models.Users;
-	Users.findOneAndUpdate({
-            "_id": req.session.userId
-        }, {
-            $push: {
-                classes: req.classid
-            }
-        }, function (error, document) {
-            if (error) {
-                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
-            } else {
-                utils.sendSuccessResponse(res);
-            }
-        }
-
-    );
+	controller.addClassToUser(req, res);
 });
 
+/*
+	PUT a class removed from a specific user
+*/
 router.put('delete/:classid', function(req, res){
-	var Users = models.Users;
-	Users.findOneAndUpdate({
-            "_id": req.session.userId
-        }, {
-            $pull: {
-                classes: req.classid
-            }
-        }, function (error, document) {
-            if (error) {
-                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
-            } else {
-                utils.sendSuccessResponse(res);
-            }
-        }
-
-    );
+	controller.removeClassFromUser(req, res);
 });
 
 module.exports = router;
