@@ -101,9 +101,22 @@ var controller = function(){
         */
         addToParty: function(req, res) {
             if(req.user.party){
-                //TODO: change this to a call to delete once I refactor
-                utils.sendErrResponse(res, 403, "you're already in a party!")
+                //decrement that party's counter
+                Parties.findOneAndUpdate({
+                        "_id": req.user.party
+                    }, {
+                        $inc: {
+                            attendees: -1
+                        }
+                    }, function (error, document) {
+                        if (error) {
+                            utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                        }
+                    }
+
+                );
             }
+
             //increment the party attendees counter
             Parties.findOneAndUpdate({
                     "_id": req.params.id
