@@ -115,9 +115,11 @@ window.LoggedInView = Backbone.View.extend({
                     var newTab = $('<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab"><span class="color-palette"></span>' + courseNumber + '</a></li>');
                     $("#new-class-tab", $(self.el)).before(newTab);
                     var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
+                        '<div class="container-fluid">'+
                         '<div class="row">'+
                         '<div class="col-md-7 col-md-offset-1">Location</div>'+
                         '<div class="col-md-4">Attendees</div>'+
+                        '</div>'+
                         '</div>'+
                         '</div>';
                     $("#new-class-panel", $(self.el)).before(newPanel);
@@ -325,7 +327,6 @@ window.LoggedInView = Backbone.View.extend({
                     var coordinates = [coords.lat, coords.lng];
                     var courseId = $("#new-party-course-number", $(self.el)).val();
                     $(this).unbind("click");
-                    console.log("clicked");
                     $.ajax({
                         method:"POST",
                         url:"/parties",
@@ -337,11 +338,8 @@ window.LoggedInView = Backbone.View.extend({
                             lat: coords.lat,
                             lng: coords.lng
                         }, success: function(partyResponse) {
-                            console.log(partyResponse);
                             var party = partyResponse.content;
                             self.user.party = party._id;
-
-                            console.log("refreshing");
                             self.refreshTab(courseId, party._id).done(function() {
                                 $("#class-tab-"+courseId, $(self.el)).tab("show");
                                 $(".class-tab-panel", $(self.el)).removeClass("active");
