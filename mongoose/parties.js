@@ -6,7 +6,8 @@ var Schema = mongoose.Schema;
 var partySchema = mongoose.Schema({
 	location: String,
 	details: String,
-	coordinates: [Number],
+	lat: Number,
+    lng: Number,
 	endTime: Date,
 	attendees: Number,
 	course: {type: Schema.Types.ObjectId, ref: 'Courses'}

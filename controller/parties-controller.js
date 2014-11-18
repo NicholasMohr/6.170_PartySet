@@ -18,6 +18,7 @@ var controller = function(){
                 //make the new party- this relies on the req.body names being the same as in model
                 var newParty = new Parties(req.body);
                 newParty.attendees = 1;
+                console.log(req.body);
                 //save the party that I just made
                 newParty.save(function(err,doc){
                     if (err) {
