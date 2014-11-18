@@ -183,9 +183,11 @@ window.LoggedInView = Backbone.View.extend({
                     type: "DELETE",
                     url: "/parties/"+partyId,
                     success: function() {
-                        self.refreshTab(courseId).done(function() {
-                            self.openPartyDetails(partyId);
-                        });
+                        var attendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
+                        attendees.text(parseInt(attendees.text())-1);
+                        var joinButton = $("#party-line-"+partyId+" .join-party-button", $(self.el));
+                        joinButton.text("Join");
+                        self.openPartyDetails(partyId);
                         self.user.party = undefined;
                         $(button).text("Join");
                     }, error: function(xhr, status, err) {
@@ -197,9 +199,20 @@ window.LoggedInView = Backbone.View.extend({
                     type: "PUT",
                     url: "/parties/"+partyId,
                     success: function() {
-                        self.refreshTab(courseId).done(function() {
-                            self.openPartyDetails(partyId);
-                        });
+
+                        if (self.user.party !== undefined) {
+                            var prevAttendees = $("#party-line-"+self.user.party+" .attendees-column", $(self.el));
+                            prevAttendees.text(parseInt(prevAttendees.text())-1);
+                            var prevJoinButton = $("#party-line-"+self.user.party+" .join-party-button", $(self.el));
+                            prevJoinButton.text("Join");
+                        }
+
+                        var attendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
+                        attendees.text(parseInt(attendees.text())+1);
+                        var joinButton = $("#party-line-"+partyId+" .join-party-button", $(self.el));
+                        joinButton.text("Leave");
+                        self.openPartyDetails(partyId);
+
                         self.user.party = partyId;
                         $(button).text("Leave");
                     }, error: function(xhr, status, err) {
@@ -212,12 +225,12 @@ window.LoggedInView = Backbone.View.extend({
 
     newPartyLine: function(party) {
         var line = $('<div class="row course-line" id="party-line-'+party._id+'"></div>');
-        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-7">'+party.location+'</div><div class="col-md-4">'+party.attendees+'</div>');
+        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-7">'+party.location+'</div><div class="col-md-4 attendees-column">'+party.attendees+'</div>');
         var buttonText = "Join";
         if (this.user.party == party._id) {
             buttonText = "Leave";
         }
-        var otherContent = $('<div class="party-details"><div class="col-md-7 col-md-offset-1">'+party.details+'</div><div class="col-md-4"><button class="btn btn-default" id="join-'+party._id+'">'+buttonText+'</button></div></div>');
+        var otherContent = $('<div class="party-details"><div class="col-md-7 col-md-offset-1">'+party.details+'</div><div class="col-md-4"><button class="join-party-button btn btn-default" id="join-'+party._id+'">'+buttonText+'</button></div></div>');
         line.append(mainContent).append(otherContent);
         return line;
     },
