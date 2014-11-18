@@ -29,7 +29,7 @@ window.LoggedOutHeaderView = Backbone.View.extend({
         var username = $("#sign-in-email", $(this.el)).val();
         var password = $("#sign-in-password", $(this.el)).val();
         $.ajax({
-            url:"/login",
+            url:"/users/login",
             type:"POST",
             data: {username: username, password: password},
             success: function() {

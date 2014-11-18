@@ -6,10 +6,10 @@ var userSchema = Schema({
     password: String,
     email: String,
     verified: Boolean,
-    party: {type: Schema.Types.ObjectId, ref: 'Parties'},
-    classes: [{type: Schema.Types.ObjectId, ref: 'Classes'}]
+    party: {type: Schema.Types.ObjectId, ref: 'Party'},
+    courses: [{type: Schema.Types.ObjectId, ref: 'Course'}]
 });
 // }, {collection: "users"});
 
 // exports.Users = mongoose.model('Users', userSchema);
-module.exports = mongoose.model('Users', userSchema);
+module.exports = mongoose.model('User', userSchema);

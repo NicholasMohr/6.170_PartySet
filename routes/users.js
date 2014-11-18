@@ -65,12 +65,12 @@ router.post('/logout', function(req, res){
 });
 
 /* PUT a class listed for a specific user */
-router.put('/:classid', function(req, res){
+router.put('/:courseId', function(req, res){
 	controller.addClassToUser(req, res);
 });
 
 /* PUT a class removed from a specific user */
-router.put('delete/:classid', function(req, res){
+router.put('/delete/:courseId', function(req, res){
 	controller.removeClassFromUser(req, res);
 });
 

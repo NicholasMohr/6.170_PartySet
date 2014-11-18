@@ -1,5 +1,6 @@
 var User = require('../mongoose/users');
 var mongoose = require('mongoose');
+var utils = require('../utils/utils');
 
 var controller = function(){
     return {
@@ -7,14 +8,17 @@ var controller = function(){
             Returns logged in user if there is a user logged in
         */
         getCurrentUser: function(req, res) {
-            if (!req.isAuthenticated()) { utils.sendErrResponse(res, 401, 'You are not logged in!'); }
-            User.findById(req.user._id.toString(), 'classes').populate('classes', 'name').exec(function(err, u){
-                if (err) {
-                    utils.sendErrResponse(res, 400, err.message);
-                } else {
-                    return utils.sendSuccessResponse({'classes': u.classes, 'name': u.name, 'id': req.user._id.toString()});
-                }
-            });
+            if (!req.isAuthenticated()) {
+                utils.sendErrResponse(res, 401, 'You are not logged in!');
+            } else {
+                User.findById(req.user._id.toString(), 'courses').populate('courses', 'name').exec(function (err, u) {
+                    if (err) {
+                        utils.sendErrResponse(res, 400, err.message);
+                    } else {
+                        return utils.sendSuccessResponse(res, {'courses': u.courses, 'name': u.name, 'id': req.user._id.toString()});
+                    }
+                });
+            }
         },
 
         /*
@@ -26,7 +30,7 @@ var controller = function(){
                 "_id": req.session.userId
                 }, {
                     $push: {
-                        classes: req.classid
+                        courses: req.courseId
                     }
                 }, function (error, document) {
                     if (error) {
@@ -47,7 +51,7 @@ var controller = function(){
                     "_id": req.session.userId
                 }, {
                     $pull: {
-                        classes: req.classid
+                        courses: req.courseId
                     }
                 }, function (error, document) {
                     if (error) {
