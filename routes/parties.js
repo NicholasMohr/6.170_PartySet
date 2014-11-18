@@ -9,6 +9,7 @@ var utils = require('../utils/utils');
 router.post('/', function (req, res) {
     //I doubt this will work
     if(req.user){
+        console.log(req.body);
         var newParty = new Parties(req.body);
         newParty.attendees = 1;
         console.log(newParty);
@@ -34,7 +35,7 @@ router.post('/', function (req, res) {
                     });
                 }
                 req.user.party = party_id;
-                utils.sendSuccessResponse(res);
+                utils.sendSuccessResponse(res, doc);
             }
         });
     }

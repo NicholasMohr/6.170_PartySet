@@ -15,7 +15,8 @@ var controller = function(){
                     if (err) {
                         utils.sendErrResponse(res, 400, err.message);
                     } else {
-                        return utils.sendSuccessResponse(res, {'courses': u.courses, 'name': u.name, 'id': req.user._id.toString()});
+                        console.log(u);
+                        return utils.sendSuccessResponse(res, {'party': u.party,'courses': u.courses, 'name': u.name, 'id': req.user._id.toString()});
                     }
                 });
             }
