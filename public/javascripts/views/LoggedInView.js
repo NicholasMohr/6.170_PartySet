@@ -190,6 +190,7 @@ window.LoggedInView = Backbone.View.extend({
 
     openPartyDetails: function(partyId) {
         var line = $("#party-line-"+partyId, $(this.el));
+        console.log(line);
         $(".glyphicon", line).removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-down");
         line.addClass("expanded");
     },
@@ -250,11 +251,12 @@ window.LoggedInView = Backbone.View.extend({
                             location:$( "#new-party-location", $(self.el)).val(),
                             details:$( "#new-party-details", $(self.el)).val(),
                             coordinates: coordinates
-                        }, success: function(party) {
+                        }, success: function(partyResponse) {
+                            var party = partyResponse.content;
                             self.user.party = party._id;
-                            $("#course-panel-"+courseId, $(self.el)).append(self.newPartyLine(party.content));
-                            self.bindJoinButton(party._id);
+                            self.refreshTab(courseId);
                             $("#class-tab-"+courseId, $(self.el)).tab("show");
+                            self.openPartyDetails(party._id);
                             var icon = L.MakiMarkers.icon({color: "#b0b", size: "m"});
                             L.marker(coords, {clickable: true, icon: icon}).addTo(self.map);
                             $("#new-party-modal", $(self.el)).modal("hide");

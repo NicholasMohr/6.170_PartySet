@@ -56,3 +56,7 @@ body {
 .class-tab-panel {
 	padding-top:10px;
 }
+
+.open-party-details {
+	cursor:pointer;
+}
