@@ -23,7 +23,7 @@ var controller = function(){
                     if (err) {
                         utils.sendErrResponse(res, 500, 'An unknown error occurred.');
                     } else {
-
+                        
                         if (req.user.party) {
                             //Remove user from their current party (decrement users)
                             Parties.findOneAndUpdate({
