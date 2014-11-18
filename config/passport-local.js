@@ -77,10 +77,13 @@ module.exports = function(passport){
 ));
 
   passport.serializeUser(function(user, done) {
-    done(null, user);
+      done(null, user);
   });
 
   passport.deserializeUser(function(user, done) {
-    done(null, user);
+
+      User.findOne(user._id, function(err, userDoc) {
+          done(err,userDoc);
+      })
   });
 };
