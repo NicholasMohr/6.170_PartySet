@@ -1,3 +1,5 @@
+// Primary Author: Jessica
+
 var AppRouter = Backbone.Router.extend({
 
     routes: {

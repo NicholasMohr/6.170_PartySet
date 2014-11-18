@@ -1,4 +1,4 @@
-// Primary Author: Hyungie Sung
+// Primary Author: Hyungie
 
 var LocalStrategy = require('passport-local').Strategy;
 var bcrypt = require('bcrypt');

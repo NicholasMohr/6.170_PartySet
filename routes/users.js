@@ -1,3 +1,5 @@
+// Primary Authors: Nick, Hyungie
+
 var express = require('express');
 var router = express.Router();
 var passport = require('passport');
