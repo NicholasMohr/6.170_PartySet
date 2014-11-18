@@ -254,12 +254,14 @@ window.LoggedInView = Backbone.View.extend({
                             self.user.party = party._id;
                             $("#course-panel-"+courseId, $(self.el)).append(self.newPartyLine(party.content));
                             self.bindJoinButton(party._id);
+                            $("#class-tab-"+courseId, $(self.el)).tab("show");
+                            var icon = L.MakiMarkers.icon({color: "#b0b", size: "m"});
+                            L.marker(coords, {clickable: true, icon: icon}).addTo(self.map);
+                            $("#new-party-modal", $(self.el)).modal("hide");
+                            $(this).unbind("click");
                         }
                     });
-                    var icon = L.MakiMarkers.icon({color: "#b0b", size: "m"});
-                    L.marker(coords, {clickable: true, icon: icon}).addTo(self.map);
-                    $("#new-party-modal", $(self.el)).modal("hide");
-                    $(this).unbind("click");
+
                 });
             });
         } else {
