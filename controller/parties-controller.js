@@ -39,8 +39,14 @@ var controller = function(){
                             });
                         }
                         //update req.user's party so that
-                        req.user.party = doc._id;
-                        utils.sendSuccessResponse(res);
+                        Users.update({"_id": req.user._id}, {"party": doc._id}, function (error, document) {
+                            if (error) {
+                                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                            } else {
+                                req.user.party = req.params.id
+                                utils.sendSuccessResponse(res,doc);
+                            }
+                        });
                     }
                 });
             }
