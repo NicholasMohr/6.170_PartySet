@@ -3,8 +3,9 @@
 var express = require('express');
 var router = express.Router();
 
-var Parties = require('../mongoose/parties')
-var Users = require('../mongoose/users')
+var Parties = require('../mongoose/parties');
+var Users = require('../mongoose/users');
+var controller = require('../controller/users-controller');
 var utils = require('../utils/utils');
 
 //create new party and add current user to it
