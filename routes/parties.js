@@ -74,9 +74,10 @@ router.get('/:id', function (req, res) {
 //add current user to party
 router.put('/:id', function (req, res) {
     if(req.user.party){
-        //TODO: change this to a call to delete
+        //TODO: change this to a call to delete once I refactor
         utils.sendErrResponse(res, 403, "you're already in a party!")
     }
+    //increment the party attendees counter
     Parties.findOneAndUpdate({
         	"_id": req.params.id
 	    }, {
@@ -90,6 +91,7 @@ router.put('/:id', function (req, res) {
 
         }
     );
+    //update the user so it contains the right party
     Users.update({"_id": req.user._id}, {"party": req.params.id}, function (error, document) {
         if (error) {
             utils.sendErrResponse(res, 500, 'An unknown error occurred.');
@@ -102,7 +104,9 @@ router.put('/:id', function (req, res) {
 
 //remove current user from party
 router.delete('/:id', function (req, res) {
+    //only allow them to leave a party they are already in.
     if(req.user.party === req.params.id){
+        //decrement that party's users count
         Parties.findOneAndUpdate({
                 "_id": req.params.id
             }, {
@@ -116,11 +120,12 @@ router.delete('/:id', function (req, res) {
             }
 
         );
+        //update the user so it contains no party
         Users.update({"_id": req.user._id}, {"party": null}, function (error, document) {
             if (error) {
                 utils.sendErrResponse(res, 500, 'An unknown error occurred.');
             } else {
-                req.user.party = req.params.id
+                req.user.party = null
                 utils.sendSuccessResponse(res);
             }
         });
