@@ -1,3 +1,5 @@
+// Primary Author: Jessica
+
 window.utils = {
 
     // Asynchronously load templates located in separate .html files

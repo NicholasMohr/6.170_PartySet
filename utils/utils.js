@@ -1,3 +1,5 @@
+// Primary Authors: Nick, Carolyn
+
 var utils = {};
 
 /*

@@ -1,3 +1,5 @@
+// Primary Author: Nick
+
 var express = require('express');
 var router = express.Router();
 
@@ -6,7 +8,7 @@ var Users = require('../mongoose/users')
 var Courses = require('../mongoose/courses')
 var utils = require('../utils/utils');
 
-//gives all classes
+// gives all classes
 router.get('/', function(req, res){
     Courses.find({}, function(err,courses){
         if(err){
@@ -18,7 +20,7 @@ router.get('/', function(req, res){
     })
 })
 
-//gives all the parties in a class
+// gives all the parties in a class
 router.get('/:course_id', function (req, res) {
     Parties.find({course : req.params.course_id}, function(err,parties){
         if(err){
@@ -31,7 +33,7 @@ router.get('/:course_id', function (req, res) {
     
 });
 
-//make a new class
+// make a new class
 router.post('/', function(req,res){
     console.log(req.body);
     var newCourse = new Courses(req.body);

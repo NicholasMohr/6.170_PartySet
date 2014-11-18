@@ -1,3 +1,5 @@
+// Primary Authors: Nick
+
 var User = require('../mongoose/users');
 var mongoose = require('mongoose');
 var utils = require('../utils/utils');

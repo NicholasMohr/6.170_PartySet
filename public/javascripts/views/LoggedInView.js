@@ -1,3 +1,5 @@
+// Primary Author: Jessica
+
 window.LoggedInView = Backbone.View.extend({
 
     initialize: function (options) {

@@ -1,3 +1,5 @@
+// Primary Author: Jessica
+
 window.LoggedOutHeaderView = Backbone.View.extend({
 
     initialize: function () {

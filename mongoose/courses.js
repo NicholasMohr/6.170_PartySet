@@ -1,3 +1,5 @@
+// Primary Author: Carolyn
+
 var mongoose = require('mongoose');
 
 var courseSchema = mongoose.Schema({
