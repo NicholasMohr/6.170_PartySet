@@ -8,45 +8,21 @@ var Users = require('../mongoose/users')
 var Courses = require('../mongoose/courses')
 var utils = require('../utils/utils');
 
-// gives all classes
-router.get('/', function(req, res){
-    Courses.find({}, function(err,courses){
-        if(err){
-            utils.sendErrResponse(res, 500, 'An unexpected error occured.');
-        }
-        else{
-            res.json(courses)
-        }
-    })
-})
+var controller = require('../controller/courses-controller');
 
-// gives all the parties in a class
-router.get('/:course_id', function (req, res) {
-    Parties.find({course : req.params.course_id}, function(err,parties){
-        if(err){
-            utils.sendErrResponse(res, 500, 'An unexpected error occured.');
-        }
-        else{
-            res.json(parties)
-        }
-    })
-    
+// GET all classes
+router.get('/', function (req, res){
+    controller.getAllCourses(req, res);
 });
 
-// make a new class
+// GET all the parties in a class
+router.get('/:course_id', function (req, res) {
+    controller.getPartiesOfCourse(req, res); 
+});
+
+// POST make a new class
 router.post('/', function(req,res){
-    var newCourse = new Courses(req.body);
-    newCourse.save(function(err,doc){
-        if(err){
-            utils.sendErrResponse(res, 500, 'An unexpected error occured.');
-        }
-        else{
-            utils.sendSuccessResponse(res);
-        }
-    })
-})
-
-
-
+    controller.createNewCourse(req, res);
+});
 
 module.exports = router;
