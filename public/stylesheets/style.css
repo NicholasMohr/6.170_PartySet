@@ -91,3 +91,8 @@ body {
 	display:inline-block;
 	margin-right: 5px;
 }
+
+.course-line {
+	padding:5px;
+	border-radius: 5px;
+}

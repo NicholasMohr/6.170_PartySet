@@ -22,9 +22,11 @@
 		<div class="tab-content">
 			<% _.each(user.courses, function(course) { %>
 				<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-<%= course._id %>">
+					<div class="container-fluid">
 					<div class="row">
-						<div class="col-md-7 col-md-offset-1">Location</div>
+						<div class="col-md-6 col-md-offset-1">Location</div>
 						<div class="col-md-4">Attendees</div>
+					</div>
 					</div>
 				</div>
 			<% }) %>
