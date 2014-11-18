@@ -37,8 +37,8 @@ var AppRouter = Backbone.Router.extend({
                     url:"/courses",
                     type:"GET"
                 }).done(function(allCourses) {
-                    $('.header').html(new LoggedInHeaderView({user:user}).el);
-                    $('#content').html(new LoggedInView({user:user, courses:allCourses}).el);
+                    $('.header').html(new LoggedInHeaderView({user:user.content}).el);
+                    $('#content').html(new LoggedInView({user:user.content, courses:allCourses}).el);
                 });
 
             },

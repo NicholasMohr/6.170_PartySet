@@ -92,21 +92,32 @@ window.LoggedInView = Backbone.View.extend({
     addNewCourse: function(e) {
         e.preventDefault();
         var courseId = $('#add-new-course', $(this.el))[0].selectize.getValue();
+        var self = this;
         if (courseId != "") {
             var courseNumber = $($('#add-new-course', $(this.el))[0].selectize.getOption(courseId)).text();
-            var newTab = '<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab">' + courseNumber + '</a></li>';
-            $("#new-class-tab", $(this.el)).before(newTab);
-            var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
-                '<div class="row">'+
-                    '<div class="col-md-7 col-md-offset-1">Location</div>'+
-                    '<div class="col-md-4">Attendees</div>'+
-                '</div>'+
-            '</div>';
-            $("#new-class-panel", $(this.el)).before(newPanel);
-            this.refreshTab(courseId);
-            $("#class-tab-"+courseId, $(this.el)).tab("show");
-            $("#new-class-panel", $(this.el)).removeClass("active");
-            $("#course-panel-"+courseId, $(this.el)).addClass("active");
+            $.ajax({
+                type:"PUT",
+                url:"/users/"+courseId,
+                success: function() {
+                    var newTab = '<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab">' + courseNumber + '</a></li>';
+                    $("#new-class-tab", $(self.el)).before(newTab);
+                    var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
+                        '<div class="row">'+
+                        '<div class="col-md-7 col-md-offset-1">Location</div>'+
+                        '<div class="col-md-4">Attendees</div>'+
+                        '</div>'+
+                        '</div>';
+                    $("#new-class-panel", $(self.el)).before(newPanel);
+                    self.refreshTab(courseId);
+                    $("#class-tab-"+courseId, $(self.el)).tab("show");
+                    $("#new-class-panel", $(self.el)).removeClass("active");
+                    $("#course-panel-"+courseId, $(self.el)).addClass("active");
+                    $("#new-party-course-number", $(this.el)).append('<option value="'+courseId+'">'+courseNumber+'</option>');
+                }, error: function(xhr, status, err) {
+                    console.log(err);
+                }
+            });
+
         } else {
             $("#add-course-errors", $(this.el)).text("Please select a course");
         }
@@ -131,7 +142,7 @@ window.LoggedInView = Backbone.View.extend({
         var self = this;
         $.ajax({
             method:"GET",
-            url:"/parties/"+courseId,
+            url:"/courses/"+courseId,
             success: function(parties) {
                 _.each(parties, function(party) {
                     tabPanel.append(self.newPartyLine(party));
@@ -196,7 +207,9 @@ window.LoggedInView = Backbone.View.extend({
                 $("#new-party-modal", $(self.el)).modal("show");
                 $("#add-party-button", $(self.el)).on("click", function () {
                     var endTime = new Date();
-                    endTime.setHours(endTime.getHours+$( "#new-party-duration", $(self.el))[0].value);
+                    var duration = $( "#new-party-duration", $(self.el)).slider("option", "value");
+                    endTime.setHours(endTime.getHours()+duration);
+                    console.log(coords);
                     $.ajax({
                         method:"POST",
                         url:"/parties",

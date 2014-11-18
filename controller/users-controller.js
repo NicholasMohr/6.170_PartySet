@@ -11,7 +11,7 @@ var controller = function(){
             if (!req.isAuthenticated()) {
                 utils.sendErrResponse(res, 401, 'You are not logged in!');
             } else {
-                User.findById(req.user._id.toString(), 'courses').populate('courses', 'name').exec(function (err, u) {
+                User.findById(req.user._id.toString()).populate('courses').exec(function (err, u) {
                     if (err) {
                         utils.sendErrResponse(res, 400, err.message);
                     } else {
@@ -24,13 +24,15 @@ var controller = function(){
         /*
             Add a class to a user
         */
-        addClasstoUser: function(req, res) {
+        addClassToUser: function(req, res) {
             // var Users = models.Users;
-            Users.findOneAndUpdate({
-                "_id": req.session.userId
+            console.log(req.user._id);
+            console.log(req.params.courseId);
+            User.findOneAndUpdate({
+                "_id": req.user._id
                 }, {
                     $push: {
-                        courses: req.courseId
+                        courses: req.params.courseId
                     }
                 }, function (error, document) {
                     if (error) {
@@ -47,11 +49,11 @@ var controller = function(){
         */
         removeClassFromUser: function(req, res) {
             // var Users = models.Users;
-            Users.findOneAndUpdate({
-                    "_id": req.session.userId
+            User.findOneAndUpdate({
+                    "_id": req.user._id
                 }, {
                     $pull: {
-                        courses: req.courseId
+                        courses: req.params.courseId
                     }
                 }, function (error, document) {
                     if (error) {
