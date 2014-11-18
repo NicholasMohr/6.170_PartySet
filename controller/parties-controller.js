@@ -30,7 +30,7 @@ var controller = function(){
                                 "_id": req.user.party
                             }, {
                                 $inc: {
-                                    users: -1
+                                    attendees: -1
                                 }
                             }, function (error, document) {
                                 if (error) {
@@ -38,7 +38,7 @@ var controller = function(){
                                 }
                             });
                         }
-                        //update req.user's party so that
+                        //actually update req.user in the database
                         Users.update({"_id": req.user._id}, {"party": doc._id}, function (error, document) {
                             if (error) {
                                 utils.sendErrResponse(res, 500, 'An unknown error occurred.');
@@ -95,7 +95,7 @@ var controller = function(){
                     "_id": req.params.id
                 }, {
                     $inc: {
-                        users: 1
+                        attendees: 1
                     }
                 }, function (error, document) {
                     if (error) {
@@ -126,7 +126,7 @@ var controller = function(){
                         "_id": req.params.id
                     }, {
                         $inc: {
-                            users: -1
+                            attendees: -1
                         }
                     }, function (error, document) {
                         if (error) {
