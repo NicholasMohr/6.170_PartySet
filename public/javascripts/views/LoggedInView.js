@@ -252,7 +252,7 @@ window.LoggedInView = Backbone.View.extend({
                             coordinates: coordinates
                         }, success: function(party) {
                             self.user.party = party._id;
-                            $("#course-panel-"+courseId, $(self.el)).append(self.newPartyLine(party));
+                            $("#course-panel-"+courseId, $(self.el)).append(self.newPartyLine(party.content));
                             self.bindJoinButton(party._id);
                         }
                     });
