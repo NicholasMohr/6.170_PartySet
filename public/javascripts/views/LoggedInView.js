@@ -115,9 +115,8 @@ window.LoggedInView = Backbone.View.extend({
                     $("#new-class-panel", $(self.el)).removeClass("active");
                     $("#course-panel-"+courseId, $(self.el)).addClass("active");
                     $("#new-party-course-number", $(self.el)).append('<option value="'+courseId+'">'+courseNumber+'</option>');
-                    console.log(self.user.courses);
+
                     self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
-                    console.log(self.user.courses);
                     $('#add-new-course', $(self.el))[0].selectize.removeOption(courseId);
                 }, error: function(xhr, status, err) {
                     console.log(err);
@@ -134,11 +133,11 @@ window.LoggedInView = Backbone.View.extend({
         $('#add-new-course', $(this.el))[0].selectize.setValue("");
     },
 
-    bindMarkerClick: function(marker, party) {
+    bindMarkerClick: function(marker, partyId, courseId) {
         var self = this;
         marker.on("click", function() {
-            $("#class-tab-"+party.course._id, $(this.el)).tab("show");
-            self.openPartyDetails(party._id);
+            $("#class-tab-"+courseId, $(this.el)).tab("show");
+            self.openPartyDetails(partyId);
         });
     },
 
@@ -146,7 +145,7 @@ window.LoggedInView = Backbone.View.extend({
         var tabPanel = $("#course-panel-"+courseId, $(this.el));
         $(".course-line", tabPanel).remove();
         var self = this;
-        $.ajax({
+        var xhr = $.ajax({
             method:"GET",
             url:"/courses/"+courseId,
             success: function(parties) {
@@ -157,7 +156,8 @@ window.LoggedInView = Backbone.View.extend({
                     self.bindJoinButton(party._id);
                 })
             }
-        })
+        });
+        return xhr;
     },
 
     bindJoinButton: function(partyId) {
@@ -189,6 +189,7 @@ window.LoggedInView = Backbone.View.extend({
     },
 
     openPartyDetails: function(partyId) {
+        console.log(partyId);
         var line = $("#party-line-"+partyId, $(this.el));
         console.log(line);
         $(".glyphicon", line).removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-down");
@@ -241,7 +242,7 @@ window.LoggedInView = Backbone.View.extend({
                     endTime.setHours(endTime.getHours()+duration);
                     var coordinates = [coords.lat, coords.lng];
                     var courseId = $("#new-party-course-number", $(self.el)).val();
-                    console.log(coordinates);
+                    $(this).unbind("click");
                     $.ajax({
                         method:"POST",
                         url:"/parties",
@@ -254,13 +255,17 @@ window.LoggedInView = Backbone.View.extend({
                         }, success: function(partyResponse) {
                             var party = partyResponse.content;
                             self.user.party = party._id;
-                            self.refreshTab(courseId);
-                            $("#class-tab-"+courseId, $(self.el)).tab("show");
-                            self.openPartyDetails(party._id);
+
+
+                            self.refreshTab(courseId).done(function() {
+                                $("#class-tab-"+courseId, $(self.el)).tab("show");
+                                self.openPartyDetails(party._id);
+                            });
                             var icon = L.MakiMarkers.icon({color: "#b0b", size: "m"});
-                            L.marker(coords, {clickable: true, icon: icon}).addTo(self.map);
+                            var marker = L.marker(coords, {clickable: true, icon: icon})
+                            marker.addTo(self.map);
                             $("#new-party-modal", $(self.el)).modal("hide");
-                            $(this).unbind("click");
+                            self.bindMarkerClick(marker,party._id, courseId);
                         }
                     });
 
