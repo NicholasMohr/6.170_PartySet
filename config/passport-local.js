@@ -5,6 +5,7 @@ var bcrypt = require('bcrypt');
 var User = require('../mongoose/users');
 
 module.exports = function(passport){
+  // sign up
   passport.use('local-signup', new LocalStrategy({
       usernameField: 'username',
       passwordField: 'password',
@@ -50,6 +51,7 @@ module.exports = function(passport){
 
   }));
   
+  // login
   passport.use('local-login', new LocalStrategy({
         usernameField : 'username',
         passwordField : 'password',
@@ -58,12 +60,12 @@ module.exports = function(passport){
     function(req, username, password, done) { 
       var em = username.toLowerCase();
 
-      User.findOne({'local.username': em}, function(err, user) {
+      User.findOne({'email': em}, function(err, user) {
         // check if account with email address exists
         if (err) { return done({error: err}); }
         if (!user) { return done(null, false, {error: 'Your username or password is incorrect.'}); }
         else {
-          bcrypt.compare(password, user.local.password, function(err, matches) {
+          bcrypt.compare(password, user.password, function(err, matches) {
             // check if password matches for account
             if (err) { return done({error: err}); }
             if (matches) { return done(null, user); }

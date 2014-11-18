@@ -5,7 +5,7 @@ var userSchema = Schema({
     name: String,
     password: String,
     email: String,
-    verified: Boolean,
+    verified: Boolean, // for future implementation: email verified or not
     party: {type: Schema.Types.ObjectId, ref: 'Party'},
     courses: [{type: Schema.Types.ObjectId, ref: 'Course'}]
 });
