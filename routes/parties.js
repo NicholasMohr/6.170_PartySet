@@ -3,10 +3,7 @@
 var express = require('express');
 var router = express.Router();
 
-var Parties = require('../mongoose/parties');
-var Users = require('../mongoose/users');
-var controller = require('../controller/users-controller');
-var utils = require('../utils/utils');
+var controller = require('../controller/parties-controller');
 
 //create new party and add current user to it
 router.post('/', function (req, res) {
