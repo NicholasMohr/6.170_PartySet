@@ -84,3 +84,10 @@ body {
 .open-party-details {
 	cursor:pointer;
 }
+
+.color-palette {
+	width:10px;
+	height:10px;
+	display:inline-block;
+	margin-right: 5px;
+}

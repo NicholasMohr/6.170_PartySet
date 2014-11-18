@@ -13,7 +13,7 @@
 		<ul class="nav nav-tabs" role="tablist" data-tabs="tabs">
 			<% _.each(user.courses, function(course) { %>
 
-				<li role="presentation" class="class-tab" id="class-tab-<%= course._id %>"><a href="#course-panel-<%= course._id %>" aria-controls="#course-panel-<%= course._id %>" role="tab" data-toggle="tab"><%= course.courseNumber %></a></li>
+				<li role="presentation" class="class-tab" id="class-tab-<%= course._id %>"><a href="#course-panel-<%= course._id %>" aria-controls="#course-panel-<%= course._id %>" role="tab" data-toggle="tab"><span class="color-palette"></span><%= course.courseNumber %></a></li>
 			<% }) %>
 			<li role="presentation" class="class-tab" id="new-class-tab"><a href="#new-class-panel" aria-controls="#new-class-panel" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-plus"></span></a></li>
 		</ul>

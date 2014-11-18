@@ -5,6 +5,7 @@ window.LoggedInView = Backbone.View.extend({
     initialize: function (options) {
         this.user = options.user;
         this.courses = options.courses;
+        this.colors = ["FF0000", "0000FF", "00FF00", "FFFF00", "FF00FF", "00FFFF"];
         this.render();
 
     },
@@ -77,6 +78,7 @@ window.LoggedInView = Backbone.View.extend({
                 });
             }
         });*/
+
         self.refreshMap();
 
         return this;
@@ -108,7 +110,9 @@ window.LoggedInView = Backbone.View.extend({
                 type:"PUT",
                 url:"/users/"+courseId,
                 success: function() {
-                    var newTab = '<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab">' + courseNumber + '</a></li>';
+                    self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
+
+                    var newTab = $('<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab"><span class="color-palette"></span>' + courseNumber + '</a></li>');
                     $("#new-class-tab", $(self.el)).before(newTab);
                     var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
                         '<div class="row">'+
@@ -122,8 +126,6 @@ window.LoggedInView = Backbone.View.extend({
                     $("#new-class-panel", $(self.el)).removeClass("active");
                     $("#course-panel-"+courseId, $(self.el)).addClass("active");
                     $("#new-party-course-number", $(self.el)).append('<option value="'+courseId+'">'+courseNumber+'</option>');
-
-                    self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
                     $('#add-new-course', $(self.el))[0].selectize.removeOption(courseId);
                 }, error: function(xhr, status, err) {
                     console.log(err);
@@ -150,9 +152,16 @@ window.LoggedInView = Backbone.View.extend({
         });
     },
 
+    getCourseColor: function(courseId) {
+        return this.colors[this.user.courses.map(function(course) { return course._id; }).indexOf(courseId)];
+    },
+
     refreshTab: function(courseId) {
         var tabPanel = $("#course-panel-"+courseId, $(this.el));
         $(".course-line", tabPanel).remove();
+        var color = this.getCourseColor(courseId);
+        var tab = $("#class-tab-"+courseId, $(this.el));
+        $(".color-palette", tab).css("background-color", "#"+color);
         var self = this;
         var xhr = $.ajax({
             method:"GET",
@@ -160,7 +169,7 @@ window.LoggedInView = Backbone.View.extend({
             success: function(parties) {
                 _.each(parties, function(party) {
                     var latLng = L.latLng(party.lat, party.lng);
-                    var icon = L.MakiMarkers.icon({color: "#b0b", size: "m"});
+                    var icon = L.MakiMarkers.icon({color: "#"+color, size: "m"});
                     var marker = L.marker(latLng, {clickable: true, icon: icon})
                     marker.addTo(self.map);
                     $("#new-party-modal", $(self.el)).modal("hide");
