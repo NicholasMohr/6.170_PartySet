@@ -23,7 +23,6 @@ var controller = function(){
                     if (err) {
                         utils.sendErrResponse(res, 500, 'An unknown error occurred.');
                     } else {
-                        
                         if (req.user.party) {
                             //Remove user from their current party (decrement users)
                             Parties.findOneAndUpdate({
@@ -35,18 +34,33 @@ var controller = function(){
                             }, function (error, document) {
                                 if (error) {
                                     utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                                } else {
+                                    //actually update req.user in the database
+                                    Users.update({"_id": req.user._id}, {"party": doc._id}, function (error, document) {
+                                        if (error) {
+                                            utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                                        } else {
+                                            req.user.party = doc._id;
+                                            console.log("sending success response");
+                                            console.log(doc);
+                                            utils.sendSuccessResponse(res,doc);
+                                        }
+                                    });
+                                }
+                            });
+                        } else {
+                            Users.update({"_id": req.user._id}, {"party": doc._id}, function (error, document) {
+                                if (error) {
+                                    utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                                } else {
+                                    req.user.party = req.params.id
+                                    console.log("sending success response");
+                                    console.log(doc);
+                                    utils.sendSuccessResponse(res,doc);
                                 }
                             });
                         }
-                        //actually update req.user in the database
-                        Users.update({"_id": req.user._id}, {"party": doc._id}, function (error, document) {
-                            if (error) {
-                                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
-                            } else {
-                                req.user.party = req.params.id
-                                utils.sendSuccessResponse(res,doc);
-                            }
-                        });
+
                     }
                 });
             }
@@ -120,7 +134,9 @@ var controller = function(){
         */
         removeFromParty: function(req, res) {
             //only allow them to leave a party they are already in.
-            if(req.user.party === req.params.id){
+            console.log(req.user.party);
+            console.log(req.params.id);
+            if(req.user.party == req.params.id){
                 //decrement that party's users count
                 Parties.findOneAndUpdate({
                         "_id": req.params.id
@@ -131,19 +147,24 @@ var controller = function(){
                     }, function (error, document) {
                         if (error) {
                             utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                        } else {
+                            //update the user so it contains no party
+                            Users.update({"_id": req.user._id}, {"party": null}, function (error, document) {
+                                if (error) {
+                                    utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                                } else {
+                                    req.user.party = null;
+                                    utils.sendSuccessResponse(res);
+                                }
+                            });
                         }
                     }
 
                 );
-                //update the user so it contains no party
-                Users.update({"_id": req.user._id}, {"party": null}, function (error, document) {
-                    if (error) {
-                        utils.sendErrResponse(res, 500, 'An unknown error occurred.');
-                    } else {
-                        req.user.party = null
-                        utils.sendSuccessResponse(res);
-                    }
-                });
+
+            } else {
+                console.log("not at that party!!!!");
+                utils.sendSuccessResponse(res);
             }
         }
     }

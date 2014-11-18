@@ -149,25 +149,50 @@ window.LoggedInView = Backbone.View.extend({
             method:"GET",
             url:"/courses/"+courseId,
             success: function(parties) {
-                console.log(parties);
                 _.each(parties, function(party) {
                     var partyLine = self.newPartyLine(party)
                     tabPanel.append(partyLine);
-                    self.bindJoinButton(party._id);
+                    self.bindJoinButton(party._id, courseId);
                 })
             }
         });
         return xhr;
     },
 
-    bindJoinButton: function(partyId) {
+    bindJoinButton: function(partyId, courseId) {
+        var self = this;
         $("#join-"+partyId).on("click", function() {
-
+            if ($(this).text() === "Leave") {
+                $.ajax({
+                    type: "DELETE",
+                    url: "/parties/"+partyId,
+                    success: function() {
+                        self.refreshTab(courseId).done(function() {
+                            self.openPartyDetails(partyId);
+                        });
+                        self.user.party = undefined;
+                    }, error: function(xhr, status, err) {
+                        console.log(err);
+                    }
+                })
+            } else {
+                $.ajax({
+                    type: "PUT",
+                    url: "/parties/"+partyId,
+                    success: function() {
+                        self.refreshTab(courseId).done(function() {
+                            self.openPartyDetails(partyId);
+                        });
+                        self.user.party = partyId;
+                    }, error: function(xhr, status, err) {
+                        console.log(err);
+                    }
+                })
+            }
         })
     },
 
     newPartyLine: function(party) {
-        console.log(party);
         var line = $('<div class="row course-line" id="party-line-'+party._id+'"></div>');
         var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-7">'+party.location+'</div><div class="col-md-4">'+party.attendees+'</div>');
         var buttonText = "Join";
@@ -189,9 +214,7 @@ window.LoggedInView = Backbone.View.extend({
     },
 
     openPartyDetails: function(partyId) {
-        console.log(partyId);
         var line = $("#party-line-"+partyId, $(this.el));
-        console.log(line);
         $(".glyphicon", line).removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-down");
         line.addClass("expanded");
     },
@@ -243,6 +266,7 @@ window.LoggedInView = Backbone.View.extend({
                     var coordinates = [coords.lat, coords.lng];
                     var courseId = $("#new-party-course-number", $(self.el)).val();
                     $(this).unbind("click");
+                    console.log("clicked");
                     $.ajax({
                         method:"POST",
                         url:"/parties",
@@ -253,10 +277,11 @@ window.LoggedInView = Backbone.View.extend({
                             details:$( "#new-party-details", $(self.el)).val(),
                             coordinates: coordinates
                         }, success: function(partyResponse) {
+                            console.log(partyResponse);
                             var party = partyResponse.content;
                             self.user.party = party._id;
 
-
+                            console.log("refreshing");
                             self.refreshTab(courseId).done(function() {
                                 $("#class-tab-"+courseId, $(self.el)).tab("show");
                                 self.openPartyDetails(party._id);
@@ -266,6 +291,8 @@ window.LoggedInView = Backbone.View.extend({
                             marker.addTo(self.map);
                             $("#new-party-modal", $(self.el)).modal("hide");
                             self.bindMarkerClick(marker,party._id, courseId);
+                        }, error: function(xhr, status, err) {
+                            console.log(err);
                         }
                     });
 
