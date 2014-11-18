@@ -33,7 +33,6 @@ router.get('/:course_id', function (req, res) {
 
 //make a new class
 router.post('/', function(req,res){
-    console.log(req.body);
     var newCourse = new Courses(req.body);
     newCourse.save(function(err,doc){
         if(err){
