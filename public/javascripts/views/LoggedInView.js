@@ -101,9 +101,7 @@ window.LoggedInView = Backbone.View.extend({
     goToParty: function(e) {
         var partyId = $(e.target).attr("id").substr(12);
         var courseId = $(e.target).parents(".class-tab-panel").attr("id").substr(13);
-        if ($(e.target).parents(".course-line").eq(0).hasClass("expanded")) {
-            this.closePartyDetails(partyId);
-        } else {
+        if (!$(e.target).parents(".course-line").eq(0).hasClass("expanded")) {
             this.openPartyDetails(partyId, false);
         }
         var marker;
@@ -283,7 +281,11 @@ window.LoggedInView = Backbone.View.extend({
         if (minutes <10) {
             minutes = "0"+minutes;
         }
-        var formattedDate = date.getHours()%12+":"+minutes+" "+ampm;
+        var hours = date.getHours()%12;
+        if (hours == 0) {
+            hours = 12;
+        }
+        var formattedDate = hours+":"+minutes+" "+ampm;
         var otherContent = $('<div class="party-details"><div class="col-md-6 col-md-offset-1">Ends at '+formattedDate+'</div><div class="col-md-4"><button class="join-party-button btn btn-default" id="join-'+party._id+'">'+buttonText+'</button></div><div class="col-md-10 col-md-offset-1">'+party.details+'</div></div>');
         line.append(mainContent).append(otherContent);
         return line;
