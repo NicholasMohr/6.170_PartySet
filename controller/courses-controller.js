@@ -27,12 +27,12 @@ var controller = function(){
             get all parties in a course
         */
         getPartiesOfCourse: function(req, res) {
-            //TODO: delete all the things that are before a certain date.
-            Parties.find({course : req.params.course_id}, function(err,parties){
+            // TODO: delete all the things that are before a certain date.
+            Parties.find({course: req.params.course_id}, function(err,parties){
                 if (err) {
                     utils.sendErrResponse(res, 500, 'An unexpected error occured.');
                 } else {
-                    res.json(parties)
+                    res.json(parties);
                 }
             });
         },
