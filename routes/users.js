@@ -81,6 +81,7 @@ router.put('/delete/:courseId', function(req, res){
     For internal use only
 */
 router.get('/loggedin', function(req, res) {
+    console.log(req.user);
     controller.getCurrentUser(req, res);
 });
 
