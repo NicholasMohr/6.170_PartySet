@@ -330,7 +330,7 @@ window.LoggedInView = Backbone.View.extend({
                         method:"POST",
                         url:"/parties",
                         data: {
-                            endTime:endTime,
+                            expireAt:endTime,
                             course:$("#new-party-course-number", $(self.el)).val(),
                             location:$( "#new-party-location", $(self.el)).val(),
                             details:$( "#new-party-details", $(self.el)).val(),

@@ -8,7 +8,7 @@ var partySchema = mongoose.Schema({
 	details: String,
 	lat: Number,
     lng: Number,
-	endTime: Date,
+	expireAt: Date,
 	attendees: Number,
 	course: {type: Schema.Types.ObjectId, ref: 'Courses'}
 },{collection: "parties"});
