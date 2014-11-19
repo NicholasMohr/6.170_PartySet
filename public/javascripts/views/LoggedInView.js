@@ -89,7 +89,17 @@ window.LoggedInView = Backbone.View.extend({
         "click #add-course-button":"addNewCourse",
         "click #new-class-tab":"clearAddNewCourse",
         "click .open-party-details":"openPartyDetailsClick",
-        "click #refresh-map":"refreshMap"
+        "click #refresh-map":"refreshMap",
+        "click .go-to-party":"goToParty"
+    },
+
+    goToParty: function(e) {
+        var partyId = $(e.target).attr("id").substr(12);
+        if ($(e.target).parents(".course-line").eq(0).hasClass("expanded")) {
+            this.closePartyDetails(partyId);
+        } else {
+            this.openPartyDetails(partyId, false);
+        }
     },
 
     refreshMap: function() {
@@ -117,7 +127,7 @@ window.LoggedInView = Backbone.View.extend({
                     var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
                         '<div class="container-fluid">'+
                         '<div class="row">'+
-                        '<div class="col-md-7 col-md-offset-1">Location</div>'+
+                        '<div class="col-md-6 col-md-offset-1">Location</div>'+
                         '<div class="col-md-4">Attendees</div>'+
                         '</div>'+
                         '</div>'+
@@ -237,7 +247,7 @@ window.LoggedInView = Backbone.View.extend({
 
     newPartyLine: function(party) {
         var line = $('<div class="row course-line" id="party-line-'+party._id+'"></div>');
-        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-6">'+party.location+'</div><div class="col-md-4 attendees-column">'+party.attendees+'</div>');
+        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-6"><a class="go-to-party" id="go-to-party-'+party._id+'">'+party.location+'</a></div><div class="col-md-4 attendees-column">'+party.attendees+'</div>');
         var buttonText = "Join";
         if (this.user.party == party._id) {
             buttonText = "Leave";
@@ -323,7 +333,12 @@ window.LoggedInView = Backbone.View.extend({
                 $("#add-party-button", $(self.el)).on("click", function () {
                     var endTime = new Date();
                     var duration = $( "#new-party-duration", $(self.el)).slider("option", "value");
-                    endTime.setHours(endTime.getHours()+duration);
+                    if (duration % 1 > 0) {
+                        endTime.setMinutes(endTime.getMinutes()+30);
+                        endTime.setHours(endTime.getHours()+duration -.5);
+                    } else {
+                        endTime.setHours(endTime.getHours() + duration);
+                    }
                     var coordinates = [coords.lat, coords.lng];
                     var courseId = $("#new-party-course-number", $(self.el)).val();
                     $(this).unbind("click");
