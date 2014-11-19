@@ -14,7 +14,10 @@ window.LoggedInView = Backbone.View.extend({
         $(this.el).html(this.template({user:this.user, courses:this.courses}));
         $('[data-toggle="tooltip"]', $(this.el)).tooltip();
         this.addingParty = false;
-
+        this.markers = {};
+        for (var i=0; i<this.user.courses.length; i++) {
+            this.markers[this.user.courses[i]._id] = [];
+        }
         $(".class-tab:first", $(this.el)).tab("show");
         $(".class-tab-panel:first", $(this.el)).addClass("active");
         var self = this;
@@ -121,7 +124,7 @@ window.LoggedInView = Backbone.View.extend({
                 url:"/users/"+courseId,
                 success: function() {
                     self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
-
+                    self.markers[courseId] = [];
                     var newTab = $('<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab"><span class="color-palette"></span>' + courseNumber + '</a></li>');
                     $("#new-class-tab", $(self.el)).before(newTab);
                     var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
@@ -179,11 +182,16 @@ window.LoggedInView = Backbone.View.extend({
             method:"GET",
             url:"/courses/"+courseId,
             success: function(parties) {
+                for (var i=0; i<self.markers[courseId].length; i++) {
+                    self.map.removeLayer(self.markers[courseId][i]);
+                }
+                self.markers[courseId] = [];
                 _.each(parties, function(party) {
                     var latLng = L.latLng(party.lat, party.lng);
                     var icon = L.MakiMarkers.icon({color: "#"+color, size: "m"});
                     var marker = L.marker(latLng, {clickable: true, icon: icon})
                     marker.addTo(self.map);
+                    self.markers[courseId].push(marker);
                     $("#new-party-modal", $(self.el)).modal("hide");
                     self.bindMarkerClick(marker,party._id, courseId);
                     var partyLine = self.newPartyLine(party);
