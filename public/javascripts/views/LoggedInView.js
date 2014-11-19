@@ -14,7 +14,10 @@ window.LoggedInView = Backbone.View.extend({
         $(this.el).html(this.template({user:this.user, courses:this.courses}));
         $('[data-toggle="tooltip"]', $(this.el)).tooltip();
         this.addingParty = false;
-
+        this.markers = {};
+        for (var i=0; i<this.user.courses.length; i++) {
+            this.markers[this.user.courses[i]._id] = [];
+        }
         $(".class-tab:first", $(this.el)).tab("show");
         $(".class-tab-panel:first", $(this.el)).addClass("active");
         var self = this;
@@ -89,7 +92,17 @@ window.LoggedInView = Backbone.View.extend({
         "click #add-course-button":"addNewCourse",
         "click #new-class-tab":"clearAddNewCourse",
         "click .open-party-details":"openPartyDetailsClick",
-        "click #refresh-map":"refreshMap"
+        "click #refresh-map":"refreshMap",
+        "click .go-to-party":"goToParty"
+    },
+
+    goToParty: function(e) {
+        var partyId = $(e.target).attr("id").substr(12);
+        if ($(e.target).parents(".course-line").eq(0).hasClass("expanded")) {
+            this.closePartyDetails(partyId);
+        } else {
+            this.openPartyDetails(partyId, false);
+        }
     },
 
     refreshMap: function() {
@@ -111,13 +124,15 @@ window.LoggedInView = Backbone.View.extend({
                 url:"/users/"+courseId,
                 success: function() {
                     self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
-
+                    self.markers[courseId] = [];
                     var newTab = $('<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab"><span class="color-palette"></span>' + courseNumber + '</a></li>');
                     $("#new-class-tab", $(self.el)).before(newTab);
                     var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
+                        '<div class="container-fluid">'+
                         '<div class="row">'+
-                        '<div class="col-md-7 col-md-offset-1">Location</div>'+
+                        '<div class="col-md-6 col-md-offset-1">Location</div>'+
                         '<div class="col-md-4">Attendees</div>'+
+                        '</div>'+
                         '</div>'+
                         '</div>';
                     $("#new-class-panel", $(self.el)).before(newPanel);
@@ -167,11 +182,16 @@ window.LoggedInView = Backbone.View.extend({
             method:"GET",
             url:"/courses/"+courseId,
             success: function(parties) {
+                for (var i=0; i<self.markers[courseId].length; i++) {
+                    self.map.removeLayer(self.markers[courseId][i]);
+                }
+                self.markers[courseId] = [];
                 _.each(parties, function(party) {
                     var latLng = L.latLng(party.lat, party.lng);
                     var icon = L.MakiMarkers.icon({color: "#"+color, size: "m"});
                     var marker = L.marker(latLng, {clickable: true, icon: icon})
                     marker.addTo(self.map);
+                    self.markers[courseId].push(marker);
                     $("#new-party-modal", $(self.el)).modal("hide");
                     self.bindMarkerClick(marker,party._id, courseId);
                     var partyLine = self.newPartyLine(party);
@@ -235,7 +255,7 @@ window.LoggedInView = Backbone.View.extend({
 
     newPartyLine: function(party) {
         var line = $('<div class="row course-line" id="party-line-'+party._id+'"></div>');
-        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-6">'+party.location+'</div><div class="col-md-4 attendees-column">'+party.attendees+'</div>');
+        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-6"><a class="go-to-party" id="go-to-party-'+party._id+'">'+party.location+'</a></div><div class="col-md-4 attendees-column">'+party.attendees+'</div>');
         var buttonText = "Join";
         if (this.user.party == party._id) {
             buttonText = "Leave";
@@ -321,11 +341,15 @@ window.LoggedInView = Backbone.View.extend({
                 $("#add-party-button", $(self.el)).on("click", function () {
                     var endTime = new Date();
                     var duration = $( "#new-party-duration", $(self.el)).slider("option", "value");
-                    endTime.setHours(endTime.getHours()+duration);
+                    if (duration % 1 > 0) {
+                        endTime.setMinutes(endTime.getMinutes()+30);
+                        endTime.setHours(endTime.getHours()+duration -.5);
+                    } else {
+                        endTime.setHours(endTime.getHours() + duration);
+                    }
                     var coordinates = [coords.lat, coords.lng];
                     var courseId = $("#new-party-course-number", $(self.el)).val();
                     $(this).unbind("click");
-                    console.log("clicked");
                     $.ajax({
                         method:"POST",
                         url:"/parties",
@@ -337,11 +361,8 @@ window.LoggedInView = Backbone.View.extend({
                             lat: coords.lat,
                             lng: coords.lng
                         }, success: function(partyResponse) {
-                            console.log(partyResponse);
                             var party = partyResponse.content;
                             self.user.party = party._id;
-
-                            console.log("refreshing");
                             self.refreshTab(courseId, party._id).done(function() {
                                 $("#class-tab-"+courseId, $(self.el)).tab("show");
                                 $(".class-tab-panel", $(self.el)).removeClass("active");
