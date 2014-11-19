@@ -27,8 +27,7 @@ var controller = function(){
             get all parties in a course
         */
         getPartiesOfCourse: function(req, res) {
-            //TODO: delete all the things that are before a certain date.
-            Parties.activeForCourse({course : req.params.course_id}, function(err,parties){
+            Parties.activeForCourse(req.params.course_id, function(err, parties) {
                 if (err) {
                     utils.sendErrResponse(res, 500, 'An unexpected error occured.');
                 } else {
