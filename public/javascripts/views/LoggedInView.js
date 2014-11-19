@@ -148,7 +148,7 @@ window.LoggedInView = Backbone.View.extend({
             $("#class-tab-"+courseId, $(self.el)).tab("show");
             $(".class-tab-panel", $(self.el)).removeClass("active");
             $("#course-panel-"+courseId, $(self.el)).addClass("active");
-            self.openPartyDetails(partyId);
+            self.openPartyDetails(partyId, true);
         });
     },
 
@@ -156,7 +156,7 @@ window.LoggedInView = Backbone.View.extend({
         return this.colors[this.user.courses.map(function(course) { return course._id; }).indexOf(courseId)];
     },
 
-    refreshTab: function(courseId) {
+    refreshTab: function(courseId, partyId) {
         var tabPanel = $("#course-panel-"+courseId, $(this.el));
         $(".course-line", tabPanel).remove();
         var color = this.getCourseColor(courseId);
@@ -175,9 +175,12 @@ window.LoggedInView = Backbone.View.extend({
                     $("#new-party-modal", $(self.el)).modal("hide");
                     self.bindMarkerClick(marker,party._id, courseId);
                     var partyLine = self.newPartyLine(party);
-                    tabPanel.append(partyLine);
+                    $(".container-fluid", tabPanel).append(partyLine);
                     self.bindJoinButton(party._id, courseId);
-                })
+                });
+                if (partyId) {
+                    self.openPartyDetails(partyId, true);
+                }
             }
         });
         return xhr;
@@ -196,7 +199,6 @@ window.LoggedInView = Backbone.View.extend({
                         attendees.text(parseInt(attendees.text())-1);
                         var joinButton = $("#party-line-"+partyId+" .join-party-button", $(self.el));
                         joinButton.text("Join");
-                        self.openPartyDetails(partyId);
                         self.user.party = undefined;
                         $(button).text("Join");
                     }, error: function(xhr, status, err) {
@@ -220,7 +222,6 @@ window.LoggedInView = Backbone.View.extend({
                         attendees.text(parseInt(attendees.text())+1);
                         var joinButton = $("#party-line-"+partyId+" .join-party-button", $(self.el));
                         joinButton.text("Leave");
-                        self.openPartyDetails(partyId);
 
                         self.user.party = partyId;
                         $(button).text("Leave");
@@ -234,12 +235,24 @@ window.LoggedInView = Backbone.View.extend({
 
     newPartyLine: function(party) {
         var line = $('<div class="row course-line" id="party-line-'+party._id+'"></div>');
-        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-7">'+party.location+'</div><div class="col-md-4 attendees-column">'+party.attendees+'</div>');
+        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-6">'+party.location+'</div><div class="col-md-4 attendees-column">'+party.attendees+'</div>');
         var buttonText = "Join";
         if (this.user.party == party._id) {
             buttonText = "Leave";
         }
-        var otherContent = $('<div class="party-details"><div class="col-md-7 col-md-offset-1">'+party.details+'</div><div class="col-md-4"><button class="join-party-button btn btn-default" id="join-'+party._id+'">'+buttonText+'</button></div></div>');
+        var date = new Date(party.endTime);
+        var ampm;
+        if (date.getHours()>11) {
+            ampm="pm"
+        } else {
+            ampm="am"
+        }
+        var minutes = date.getMinutes();
+        if (minutes <10) {
+            minutes = "0"+minutes;
+        }
+        var formattedDate = date.getHours()%12+":"+minutes+" "+ampm;
+        var otherContent = $('<div class="party-details"><div class="col-md-6 col-md-offset-1">Ends at '+formattedDate+'</div><div class="col-md-4"><button class="join-party-button btn btn-default" id="join-'+party._id+'">'+buttonText+'</button></div><div class="col-md-10 col-md-offset-1">'+party.details+'</div></div>');
         line.append(mainContent).append(otherContent);
         return line;
     },
@@ -247,16 +260,22 @@ window.LoggedInView = Backbone.View.extend({
     openPartyDetailsClick: function(e) {
         var partyId = $(e.target).parents(".course-line").eq(0).attr("id").substr(11);
         if ($(e.target).hasClass("glyphicon-chevron-right")) {
-            this.openPartyDetails(partyId);
+            this.openPartyDetails(partyId, false);
         } else {
             this.closePartyDetails(partyId);
         }
     },
 
-    openPartyDetails: function(partyId) {
+    openPartyDetails: function(partyId, changeColor) {
         var line = $("#party-line-"+partyId, $(this.el));
         $(".glyphicon", line).removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-down");
         line.addClass("expanded");
+        var courseId = line.parents(".class-tab-panel").eq(0).attr("id").substr(13);
+        var color = this.getCourseColor(courseId);
+        if (changeColor) {
+            line.css("background-color", "#" + color);
+            line.animate({backgroundColor: ""}, 1000);
+        }
     },
 
     closePartyDetails: function(partyId) {
@@ -323,11 +342,10 @@ window.LoggedInView = Backbone.View.extend({
                             self.user.party = party._id;
 
                             console.log("refreshing");
-                            self.refreshTab(courseId).done(function() {
+                            self.refreshTab(courseId, party._id).done(function() {
                                 $("#class-tab-"+courseId, $(self.el)).tab("show");
                                 $(".class-tab-panel", $(self.el)).removeClass("active");
                                 $("#course-panel-"+courseId, $(self.el)).addClass("active");
-                                self.openPartyDetails(party._id);
                             });
                         }, error: function(xhr, status, err) {
                             console.log(err);
