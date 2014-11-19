@@ -1,5 +1,5 @@
-finalProj
-=========
+Final Project: P(arty)Set
+=====
 
-6.170 Final Team Project
-pitch pdf and teamcontract are in docs
+Design documents are found in the 'docs' directory.
+You can access the app [here](TODO put openshift URL).
