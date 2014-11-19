@@ -46,7 +46,7 @@ window.LoggedInView = Backbone.View.extend({
         this.map = L.map(mapContainer, {
             minZoom: 1,
             maxZoom: 5,
-            center: [-140, 250],
+            center: [-160, 280],
             crs: L.CRS.Simple,
             zoom:3
         });
@@ -67,6 +67,8 @@ window.LoggedInView = Backbone.View.extend({
 
         // tell leaflet that the map is exactly as big as the image
         this.map.setMaxBounds(bounds);
+
+        L.Util.requestAnimFrame(this.map.invalidateSize, this.map, false, this.map._container)
 
         /*$.ajax({
             method:"GET",
@@ -98,11 +100,21 @@ window.LoggedInView = Backbone.View.extend({
 
     goToParty: function(e) {
         var partyId = $(e.target).attr("id").substr(12);
+        var courseId = $(e.target).parents(".class-tab-panel").attr("id").substr(13);
         if ($(e.target).parents(".course-line").eq(0).hasClass("expanded")) {
             this.closePartyDetails(partyId);
         } else {
             this.openPartyDetails(partyId, false);
         }
+        var marker;
+        for (var i=0; i<this.markers[courseId].length; i++) {
+            if (this.markers[courseId][i].party == partyId) {
+                marker = this.markers[courseId][i];
+            }
+        }
+        this.map.panTo(marker.getLatLng());
+        $(marker._icon).eq(0).animate({"top": "-=20px"}, 500).animate({"top": "+=20px"}, 500);
+
     },
 
     refreshMap: function() {
@@ -191,6 +203,7 @@ window.LoggedInView = Backbone.View.extend({
                     var icon = L.MakiMarkers.icon({color: "#"+color, size: "m"});
                     var marker = L.marker(latLng, {clickable: true, icon: icon})
                     marker.addTo(self.map);
+                    marker.party = party._id;
                     self.markers[courseId].push(marker);
                     $("#new-party-modal", $(self.el)).modal("hide");
                     self.bindMarkerClick(marker,party._id, courseId);
@@ -230,8 +243,7 @@ window.LoggedInView = Backbone.View.extend({
                     type: "PUT",
                     url: "/parties/"+partyId,
                     success: function() {
-
-                        if (self.user.party !== undefined) {
+                        if (self.user.party != undefined) {
                             var prevAttendees = $("#party-line-"+self.user.party+" .attendees-column", $(self.el));
                             prevAttendees.text(parseInt(prevAttendees.text())-1);
                             var prevJoinButton = $("#party-line-"+self.user.party+" .join-party-button", $(self.el));
@@ -362,6 +374,12 @@ window.LoggedInView = Backbone.View.extend({
                             lng: coords.lng
                         }, success: function(partyResponse) {
                             var party = partyResponse.content;
+                            if (self.user.party != undefined) {
+                                var prevAttendees = $("#party-line-"+self.user.party+" .attendees-column", $(self.el));
+                                prevAttendees.text(parseInt(prevAttendees.text())-1);
+                                var prevJoinButton = $("#party-line-"+self.user.party+" .join-party-button", $(self.el));
+                                prevJoinButton.text("Join");
+                            }
                             self.user.party = party._id;
                             self.refreshTab(courseId, party._id).done(function() {
                                 $("#class-tab-"+courseId, $(self.el)).tab("show");
