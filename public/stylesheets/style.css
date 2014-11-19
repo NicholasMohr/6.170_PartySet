@@ -38,6 +38,30 @@ body {
 	color:#428bca;
 }
 
+#refresh-map {
+	position:absolute;
+	top:50px;
+	right:25px;
+	font-size:30px;
+	z-index:1;
+	cursor:pointer;
+	color:#428bca;
+}
+
+#refresh-map span {
+	-webkit-transition: 1s ease-in-out;
+	-moz-transition: 1s ease-in-out;
+	-o-transition: 1s ease-in-out;
+	transition: 1s ease-in-out;
+}
+
+#refresh-map:hover span {
+	-webkit-transform: rotate(180deg);
+	-moz-transform: rotate(180deg);
+	-ms-transform: rotate(180deg);
+	transform: rotate(180deg);
+}
+
 #new-party span {
 	-webkit-transition: 1s ease-in-out;
 	-moz-transition: 1s ease-in-out;
@@ -59,4 +83,16 @@ body {
 
 .open-party-details {
 	cursor:pointer;
+}
+
+.color-palette {
+	width:10px;
+	height:10px;
+	display:inline-block;
+	margin-right: 5px;
+}
+
+.course-line {
+	padding:5px;
+	border-radius: 5px;
 }

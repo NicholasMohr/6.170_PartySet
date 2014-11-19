@@ -5,6 +5,7 @@ window.LoggedInView = Backbone.View.extend({
     initialize: function (options) {
         this.user = options.user;
         this.courses = options.courses;
+        this.colors = ["FF0000", "0000FF", "00FF00", "FFFF00", "FF00FF", "00FFFF"];
         this.render();
 
     },
@@ -37,10 +38,7 @@ window.LoggedInView = Backbone.View.extend({
             sortField: 'text'
         });
 
-        _.each(self.user.courses, function(course) {
-            self.refreshTab(course._id);
-            $('#add-new-course', $(self.el))[0].selectize.removeOption(course._id);
-        });
+
         var mapContainer = $("#map", $(this.el))[0];
         this.map = L.map(mapContainer, {
             minZoom: 1,
@@ -81,6 +79,8 @@ window.LoggedInView = Backbone.View.extend({
             }
         });*/
 
+        self.refreshMap();
+
         return this;
     },
 
@@ -88,7 +88,16 @@ window.LoggedInView = Backbone.View.extend({
         "click #new-party":"newParty",
         "click #add-course-button":"addNewCourse",
         "click #new-class-tab":"clearAddNewCourse",
-        "click .open-party-details":"openPartyDetailsClick"
+        "click .open-party-details":"openPartyDetailsClick",
+        "click #refresh-map":"refreshMap"
+    },
+
+    refreshMap: function() {
+        var self = this;
+        _.each(self.user.courses, function(course) {
+            self.refreshTab(course._id);
+            $('#add-new-course', $(self.el))[0].selectize.removeOption(course._id);
+        });
     },
 
     addNewCourse: function(e) {
@@ -101,7 +110,9 @@ window.LoggedInView = Backbone.View.extend({
                 type:"PUT",
                 url:"/users/"+courseId,
                 success: function() {
-                    var newTab = '<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab">' + courseNumber + '</a></li>';
+                    self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
+
+                    var newTab = $('<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab"><span class="color-palette"></span>' + courseNumber + '</a></li>');
                     $("#new-class-tab", $(self.el)).before(newTab);
                     var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
                         '<div class="row">'+
@@ -115,8 +126,6 @@ window.LoggedInView = Backbone.View.extend({
                     $("#new-class-panel", $(self.el)).removeClass("active");
                     $("#course-panel-"+courseId, $(self.el)).addClass("active");
                     $("#new-party-course-number", $(self.el)).append('<option value="'+courseId+'">'+courseNumber+'</option>');
-
-                    self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
                     $('#add-new-course', $(self.el))[0].selectize.removeOption(courseId);
                 }, error: function(xhr, status, err) {
                     console.log(err);
@@ -136,24 +145,42 @@ window.LoggedInView = Backbone.View.extend({
     bindMarkerClick: function(marker, partyId, courseId) {
         var self = this;
         marker.on("click", function() {
-            $("#class-tab-"+courseId, $(this.el)).tab("show");
-            self.openPartyDetails(partyId);
+            $("#class-tab-"+courseId, $(self.el)).tab("show");
+            $(".class-tab-panel", $(self.el)).removeClass("active");
+            $("#course-panel-"+courseId, $(self.el)).addClass("active");
+            self.openPartyDetails(partyId, true);
         });
     },
 
-    refreshTab: function(courseId) {
+    getCourseColor: function(courseId) {
+        return this.colors[this.user.courses.map(function(course) { return course._id; }).indexOf(courseId)];
+    },
+
+    refreshTab: function(courseId, partyId) {
         var tabPanel = $("#course-panel-"+courseId, $(this.el));
         $(".course-line", tabPanel).remove();
+        var color = this.getCourseColor(courseId);
+        var tab = $("#class-tab-"+courseId, $(this.el));
+        $(".color-palette", tab).css("background-color", "#"+color);
         var self = this;
         var xhr = $.ajax({
             method:"GET",
             url:"/courses/"+courseId,
             success: function(parties) {
                 _.each(parties, function(party) {
-                    var partyLine = self.newPartyLine(party)
-                    tabPanel.append(partyLine);
+                    var latLng = L.latLng(party.lat, party.lng);
+                    var icon = L.MakiMarkers.icon({color: "#"+color, size: "m"});
+                    var marker = L.marker(latLng, {clickable: true, icon: icon})
+                    marker.addTo(self.map);
+                    $("#new-party-modal", $(self.el)).modal("hide");
+                    self.bindMarkerClick(marker,party._id, courseId);
+                    var partyLine = self.newPartyLine(party);
+                    $(".container-fluid", tabPanel).append(partyLine);
                     self.bindJoinButton(party._id, courseId);
-                })
+                });
+                if (partyId) {
+                    self.openPartyDetails(partyId, true);
+                }
             }
         });
         return xhr;
@@ -162,15 +189,18 @@ window.LoggedInView = Backbone.View.extend({
     bindJoinButton: function(partyId, courseId) {
         var self = this;
         $("#join-"+partyId).on("click", function() {
-            if ($(this).text() === "Leave") {
+            var button = this;
+            if ($(button).text() === "Leave") {
                 $.ajax({
                     type: "DELETE",
                     url: "/parties/"+partyId,
                     success: function() {
-                        self.refreshTab(courseId).done(function() {
-                            self.openPartyDetails(partyId);
-                        });
+                        var attendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
+                        attendees.text(parseInt(attendees.text())-1);
+                        var joinButton = $("#party-line-"+partyId+" .join-party-button", $(self.el));
+                        joinButton.text("Join");
                         self.user.party = undefined;
+                        $(button).text("Join");
                     }, error: function(xhr, status, err) {
                         console.log(err);
                     }
@@ -180,10 +210,21 @@ window.LoggedInView = Backbone.View.extend({
                     type: "PUT",
                     url: "/parties/"+partyId,
                     success: function() {
-                        self.refreshTab(courseId).done(function() {
-                            self.openPartyDetails(partyId);
-                        });
+
+                        if (self.user.party !== undefined) {
+                            var prevAttendees = $("#party-line-"+self.user.party+" .attendees-column", $(self.el));
+                            prevAttendees.text(parseInt(prevAttendees.text())-1);
+                            var prevJoinButton = $("#party-line-"+self.user.party+" .join-party-button", $(self.el));
+                            prevJoinButton.text("Join");
+                        }
+
+                        var attendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
+                        attendees.text(parseInt(attendees.text())+1);
+                        var joinButton = $("#party-line-"+partyId+" .join-party-button", $(self.el));
+                        joinButton.text("Leave");
+
                         self.user.party = partyId;
+                        $(button).text("Leave");
                     }, error: function(xhr, status, err) {
                         console.log(err);
                     }
@@ -194,12 +235,24 @@ window.LoggedInView = Backbone.View.extend({
 
     newPartyLine: function(party) {
         var line = $('<div class="row course-line" id="party-line-'+party._id+'"></div>');
-        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-7">'+party.location+'</div><div class="col-md-4">'+party.attendees+'</div>');
+        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-6">'+party.location+'</div><div class="col-md-4 attendees-column">'+party.attendees+'</div>');
         var buttonText = "Join";
         if (this.user.party == party._id) {
             buttonText = "Leave";
         }
-        var otherContent = $('<div class="party-details"><div class="col-md-7 col-md-offset-1">'+party.details+'</div><div class="col-md-4"><button class="btn btn-default" id="join-'+party._id+'">'+buttonText+'</button></div></div>');
+        var date = new Date(party.endTime);
+        var ampm;
+        if (date.getHours()>11) {
+            ampm="pm"
+        } else {
+            ampm="am"
+        }
+        var minutes = date.getMinutes();
+        if (minutes <10) {
+            minutes = "0"+minutes;
+        }
+        var formattedDate = date.getHours()%12+":"+minutes+" "+ampm;
+        var otherContent = $('<div class="party-details"><div class="col-md-6 col-md-offset-1">Ends at '+formattedDate+'</div><div class="col-md-4"><button class="join-party-button btn btn-default" id="join-'+party._id+'">'+buttonText+'</button></div><div class="col-md-10 col-md-offset-1">'+party.details+'</div></div>');
         line.append(mainContent).append(otherContent);
         return line;
     },
@@ -207,16 +260,22 @@ window.LoggedInView = Backbone.View.extend({
     openPartyDetailsClick: function(e) {
         var partyId = $(e.target).parents(".course-line").eq(0).attr("id").substr(11);
         if ($(e.target).hasClass("glyphicon-chevron-right")) {
-            this.openPartyDetails(partyId);
+            this.openPartyDetails(partyId, false);
         } else {
             this.closePartyDetails(partyId);
         }
     },
 
-    openPartyDetails: function(partyId) {
+    openPartyDetails: function(partyId, changeColor) {
         var line = $("#party-line-"+partyId, $(this.el));
         $(".glyphicon", line).removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-down");
         line.addClass("expanded");
+        var courseId = line.parents(".class-tab-panel").eq(0).attr("id").substr(13);
+        var color = this.getCourseColor(courseId);
+        if (changeColor) {
+            line.css("background-color", "#" + color);
+            line.animate({backgroundColor: ""}, 1000);
+        }
     },
 
     closePartyDetails: function(partyId) {
@@ -275,22 +334,19 @@ window.LoggedInView = Backbone.View.extend({
                             course:$("#new-party-course-number", $(self.el)).val(),
                             location:$( "#new-party-location", $(self.el)).val(),
                             details:$( "#new-party-details", $(self.el)).val(),
-                            coordinates: coordinates
+                            lat: coords.lat,
+                            lng: coords.lng
                         }, success: function(partyResponse) {
                             console.log(partyResponse);
                             var party = partyResponse.content;
                             self.user.party = party._id;
 
                             console.log("refreshing");
-                            self.refreshTab(courseId).done(function() {
+                            self.refreshTab(courseId, party._id).done(function() {
                                 $("#class-tab-"+courseId, $(self.el)).tab("show");
-                                self.openPartyDetails(party._id);
+                                $(".class-tab-panel", $(self.el)).removeClass("active");
+                                $("#course-panel-"+courseId, $(self.el)).addClass("active");
                             });
-                            var icon = L.MakiMarkers.icon({color: "#b0b", size: "m"});
-                            var marker = L.marker(coords, {clickable: true, icon: icon})
-                            marker.addTo(self.map);
-                            $("#new-party-modal", $(self.el)).modal("hide");
-                            self.bindMarkerClick(marker,party._id, courseId);
                         }, error: function(xhr, status, err) {
                             console.log(err);
                         }
