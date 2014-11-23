@@ -260,7 +260,7 @@ window.LoggedInView = Backbone.View.extend({
         if (this.user.party == party._id) {
             buttonText = "Leave";
         }
-        var date = new Date(party.endTime);
+        var date = new Date(party.expireAt);
         var ampm;
         if (date.getHours()>11) {
             ampm="pm"

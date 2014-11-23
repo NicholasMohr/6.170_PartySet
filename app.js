@@ -28,6 +28,11 @@ var courses = require('./routes/courses')
 
 var app = express();
 
+var db = mongoose.connection;
+db.collection("parties", function(err, coll){
+    coll.ensureIndex({expireAt: 1}, {expireAfterSeconds: 0});
+});
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
@@ -81,6 +86,5 @@ app.use(function(err, req, res, next) {
         error: {}
     });
 });
-
 
 module.exports = app;

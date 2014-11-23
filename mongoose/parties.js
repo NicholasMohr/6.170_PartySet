@@ -19,6 +19,7 @@ partySchema.statics.activeForCourse = function(id, callback) {
         docs.forEach(function(doc){
             var cur = new Date();
             var end = doc.endTime;
+            console.log(cur);
             if (cur < end){
                 active.push(doc);
             }
