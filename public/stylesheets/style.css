@@ -90,6 +90,7 @@ body {
 	height:10px;
 	display:inline-block;
 	margin-right: 5px;
+	border:1px solid black;
 }
 
 .course-line {

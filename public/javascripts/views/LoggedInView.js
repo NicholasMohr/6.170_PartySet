@@ -5,7 +5,8 @@ window.LoggedInView = Backbone.View.extend({
     initialize: function (options) {
         this.user = options.user;
         this.courses = options.courses;
-        this.colors = ["FF0000", "0000FF", "00FF00", "FFFF00", "FF00FF", "00FFFF"];
+        this.colors = [{r:255,g:0,b:0,hex:"FF0000"}, {r:0,g:0,b:255,hex:"0000FF"}, {r:0,g:255,b:0,hex:"00FF00"}, {r:255,g:255,b:0,hex:"FFFF00"}, {r:255,g:0,b:255,hex:"FF00FF"}, {r:0,g:255,b:255,hex:"00FFFF"}];
+        this.opacity = {};
         this.render();
 
     },
@@ -85,7 +86,28 @@ window.LoggedInView = Backbone.View.extend({
         "click #new-class-tab":"clearAddNewCourse",
         "click .open-party-details":"openPartyDetailsClick",
         "click #refresh-map":"refreshMap",
-        "click .go-to-party":"goToParty"
+        "click .go-to-party":"goToParty",
+        "click .color-palette":"toggleMarkerVisibility"
+    },
+
+    toggleMarkerVisibility: function(e) {
+        var courseId = $(e.target).parents(".class-tab").eq(0).attr("id").substr(10);
+        var opacity = this.opacity[courseId];
+        if (opacity == 0) {
+            var color = this.getCourseColor(courseId, 1);
+            $(e.target).css("backgroundColor", color);
+            this.opacity[courseId] = 1;
+            for (var partyId in this.markers[courseId]) {
+                this.markers[courseId][partyId].setOpacity(1);
+            }
+        } else {
+            var color = this.getCourseColor(courseId, 0);
+            $(e.target).css("backgroundColor", color);
+            this.opacity[courseId] = 0;
+            for (var partyId in this.markers[courseId]) {
+                this.markers[courseId][partyId].setOpacity(0);
+            }
+        }
     },
 
     //after clicking a listed party
@@ -123,9 +145,13 @@ window.LoggedInView = Backbone.View.extend({
                 url:"/users/"+courseId,
                 success: function() {
                     self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
+                    this.opacity[courseId] = 1;
                     self.markers[courseId] = {};
                     var newTab = $('<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab"><span class="color-palette"></span>' + courseNumber + '</a></li>');
                     $("#new-class-tab", $(self.el)).before(newTab);
+                    $(".color-palette", newTab).on("click", function() {
+
+                    });
                     var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
                         '<div class="container-fluid">'+
                         '<div class="row">'+
@@ -169,9 +195,14 @@ window.LoggedInView = Backbone.View.extend({
         });
     },
 
-    //get the color for a given courseId
-    getCourseColor: function(courseId) {
-        return this.colors[this.user.courses.map(function(course) { return course._id; }).indexOf(courseId)];
+    //get the color for a given courseId and opacity
+    getCourseColor: function(courseId, opacity) {
+        var color = this.colors[this.user.courses.map(function(course) { return course._id; }).indexOf(courseId)];
+        if (opacity !== undefined) {
+            return "rgba(" + color.r + "," + color.g + "," + color.b + "," + opacity + ")"
+        } else {
+            return "#"+color.hex;
+        }
     },
 
     //refreshes a course's parties in the tab and on the map
@@ -180,7 +211,9 @@ window.LoggedInView = Backbone.View.extend({
         $(".course-line", tabPanel).remove();
         var color = this.getCourseColor(courseId);
         var tab = $("#class-tab-"+courseId, $(this.el));
-        $(".color-palette", tab).css("background-color", "#"+color);
+        var opacity = this.opacity[courseId];
+        var cssColor = this.getCourseColor(courseId, opacity);
+        $(".color-palette", tab).css("background-color", cssColor);
         var self = this;
         var xhr = $.ajax({
             method:"GET",
@@ -194,13 +227,12 @@ window.LoggedInView = Backbone.View.extend({
                     var latLng = L.latLng(party.lat, party.lng);
                     var icon;
                     if (self.user.party == party._id) {
-                        icon = L.MakiMarkers.icon({icon:"star", color: "#" + color, size: "m"});
+                        icon = L.MakiMarkers.icon({icon:"star", color: color, size: "m"});
                     } else {
-                        icon = L.MakiMarkers.icon({color: "#" + color, size: "m"});
+                        icon = L.MakiMarkers.icon({color: color, size: "m"});
                     }
-                    var marker = L.marker(latLng, {clickable: true, icon: icon})
+                    var marker = L.marker(latLng, {clickable: true, icon: icon, opacity:opacity});
                     marker.addTo(self.map);
-                    marker.party = party._id;
                     self.markers[courseId][party._id] = marker;
                     $("#new-party-modal", $(self.el)).modal("hide");
                     self.bindMarkerClick(marker,party._id, courseId);
@@ -208,9 +240,7 @@ window.LoggedInView = Backbone.View.extend({
                     $(".container-fluid", tabPanel).append(partyLine);
                     self.bindJoinButton(party._id, courseId);
                 });
-                $(".color-palette", tab).on("click", function() {
 
-                });
                 if (partyId) {
                     self.openPartyDetails(partyId, true);
                 }
@@ -278,9 +308,9 @@ window.LoggedInView = Backbone.View.extend({
         var color = this.getCourseColor(courseId);
         var icon;
         if (star) {
-            icon = L.MakiMarkers.icon({icon:"star",color: "#" + color, size: "m"});
+            icon = L.MakiMarkers.icon({icon:"star",color: color, size: "m"});
         } else {
-            icon = L.MakiMarkers.icon({color: "#" + color, size: "m"});
+            icon = L.MakiMarkers.icon({color: color, size: "m"});
         }
         marker.setIcon(icon);
     },
@@ -333,7 +363,7 @@ window.LoggedInView = Backbone.View.extend({
         var courseId = line.parents(".class-tab-panel").eq(0).attr("id").substr(13);
         var color = this.getCourseColor(courseId);
         if (changeColor) {
-            line.css("background-color", "#" + color);
+            line.css("background-color", color);
             line.animate({backgroundColor: ""}, 1000);
         }
     },
