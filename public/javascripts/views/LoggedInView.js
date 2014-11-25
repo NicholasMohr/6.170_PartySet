@@ -208,6 +208,9 @@ window.LoggedInView = Backbone.View.extend({
                     $(".container-fluid", tabPanel).append(partyLine);
                     self.bindJoinButton(party._id, courseId);
                 });
+                $(".color-palette", tab).on("click", function() {
+
+                });
                 if (partyId) {
                     self.openPartyDetails(partyId, true);
                 }
@@ -250,10 +253,7 @@ window.LoggedInView = Backbone.View.extend({
                                 var prevJoinButton = $("#party-line-" + self.user.party + " .join-party-button", $(self.el));
                                 prevJoinButton.text("Join");
                                 var prevCourse = prevJoinButton.parents(".class-tab-panel").eq(0).attr("id").substr(13);
-                                var prevMarker = self.markers[prevCourse][self.user.party];
-                                var prevColor = self.getCourseColor(prevCourse);
-                                var prevIcon = L.MakiMarkers.icon({color: "#" + prevColor, size: "m"});
-                                prevMarker.setIcon(prevIcon);
+                                self.changeIcon(prevCourse, self.user.party, false);
                             }
                         }
 
@@ -262,10 +262,7 @@ window.LoggedInView = Backbone.View.extend({
                         var joinButton = $("#party-line-"+partyId+" .join-party-button", $(self.el));
                         joinButton.text("Leave");
                         var course = joinButton.parents(".class-tab-panel").eq(0).attr("id").substr(13);
-                        var marker = self.markers[course][partyId];
-                        var color = self.getCourseColor(course);
-                        var icon = L.MakiMarkers.icon({icon:"star",color: "#" + color, size: "m"});
-                        marker.setIcon(icon);
+                        self.changeIcon(course, partyId, true);
                         self.user.party = partyId;
                         $(button).text("Leave");
                     }, error: function(xhr, status, err) {
@@ -274,6 +271,18 @@ window.LoggedInView = Backbone.View.extend({
                 })
             }
         })
+    },
+
+    changeIcon: function(courseId, partyId, star) {
+        var marker = this.markers[courseId][partyId];
+        var color = this.getCourseColor(courseId);
+        var icon;
+        if (star) {
+            icon = L.MakiMarkers.icon({icon:"star",color: "#" + color, size: "m"});
+        } else {
+            icon = L.MakiMarkers.icon({color: "#" + color, size: "m"});
+        }
+        marker.setIcon(icon);
     },
 
     //returns the new line that contains details about a party
@@ -408,10 +417,7 @@ window.LoggedInView = Backbone.View.extend({
                                 for (var i=0; i<self.user.courses.length; i++) {
                                     var course = self.user.courses[i]._id;
                                     if (self.user.party in self.markers[course]) {
-                                        var marker = self.markers[course][self.user.party];
-                                        var color = self.getCourseColor(course);
-                                        var icon = L.MakiMarkers.icon({color: "#" + color, size: "m"});
-                                        marker.setIcon(icon);
+                                        self.changeIcon(course,self.user.party,false);
                                     }
                                 }
                             }
