@@ -16,7 +16,7 @@ window.LoggedInView = Backbone.View.extend({
         this.addingParty = false;
         this.markers = {};
         for (var i=0; i<this.user.courses.length; i++) {
-            this.markers[this.user.courses[i]._id] = [];
+            this.markers[this.user.courses[i]._id] = {};
         }
         $(".class-tab:first", $(this.el)).tab("show");
         $(".class-tab-panel:first", $(this.el)).addClass("active");
@@ -96,12 +96,7 @@ window.LoggedInView = Backbone.View.extend({
         if (!$(e.target).parents(".course-line").eq(0).hasClass("expanded")) {
             this.openPartyDetails(partyId, false);
         }
-        var marker;
-        for (var i=0; i<this.markers[courseId].length; i++) {
-            if (this.markers[courseId][i].party == partyId) {
-                marker = this.markers[courseId][i];
-            }
-        }
+        var marker = this.markers[courseId][partyId];
         this.map.panTo(marker.getLatLng());
         $(marker._icon).eq(0).animate({"top": "-=20px"}, 500).animate({"top": "+=20px"}, 500);
 
@@ -128,7 +123,7 @@ window.LoggedInView = Backbone.View.extend({
                 url:"/users/"+courseId,
                 success: function() {
                     self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
-                    self.markers[courseId] = [];
+                    self.markers[courseId] = {};
                     var newTab = $('<li role="presentation" class="class-tab" id="class-tab-' + courseId + '"><a href="#course-panel-' + courseId + '" aria-controls="#course-panel-' + courseId + '" role="tab" data-toggle="tab"><span class="color-palette"></span>' + courseNumber + '</a></li>');
                     $("#new-class-tab", $(self.el)).before(newTab);
                     var newPanel = '<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-' + courseId + '">'+
@@ -191,17 +186,22 @@ window.LoggedInView = Backbone.View.extend({
             method:"GET",
             url:"/courses/"+courseId,
             success: function(parties) {
-                for (var i=0; i<self.markers[courseId].length; i++) {
-                    self.map.removeLayer(self.markers[courseId][i]);
+                for (var party in self.markers[courseId]) {
+                    self.map.removeLayer(self.markers[courseId][party]);
                 }
-                self.markers[courseId] = [];
+                self.markers[courseId] = {};
                 _.each(parties, function(party) {
                     var latLng = L.latLng(party.lat, party.lng);
-                    var icon = L.MakiMarkers.icon({color: "#"+color, size: "m"});
+                    var icon;
+                    if (self.user.party == party._id) {
+                        icon = L.MakiMarkers.icon({icon:"star", color: "#" + color, size: "m"});
+                    } else {
+                        icon = L.MakiMarkers.icon({color: "#" + color, size: "m"});
+                    }
                     var marker = L.marker(latLng, {clickable: true, icon: icon})
                     marker.addTo(self.map);
                     marker.party = party._id;
-                    self.markers[courseId].push(marker);
+                    self.markers[courseId][party._id] = marker;
                     $("#new-party-modal", $(self.el)).modal("hide");
                     self.bindMarkerClick(marker,party._id, courseId);
                     var partyLine = self.newPartyLine(party);
@@ -245,16 +245,27 @@ window.LoggedInView = Backbone.View.extend({
                     success: function() {
                         if (self.user.party != undefined) {
                             var prevAttendees = $("#party-line-"+self.user.party+" .attendees-column", $(self.el));
-                            prevAttendees.text(parseInt(prevAttendees.text())-1);
-                            var prevJoinButton = $("#party-line-"+self.user.party+" .join-party-button", $(self.el));
-                            prevJoinButton.text("Join");
+                            if (prevAttendees.length > 0) {
+                                prevAttendees.text(parseInt(prevAttendees.text()) - 1);
+                                var prevJoinButton = $("#party-line-" + self.user.party + " .join-party-button", $(self.el));
+                                prevJoinButton.text("Join");
+                                var prevCourse = prevJoinButton.parents(".class-tab-panel").eq(0).attr("id").substr(13);
+                                var prevMarker = self.markers[prevCourse][self.user.party];
+                                var prevColor = self.getCourseColor(prevCourse);
+                                var prevIcon = L.MakiMarkers.icon({color: "#" + prevColor, size: "m"});
+                                prevMarker.setIcon(prevIcon);
+                            }
                         }
 
                         var attendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
                         attendees.text(parseInt(attendees.text())+1);
                         var joinButton = $("#party-line-"+partyId+" .join-party-button", $(self.el));
                         joinButton.text("Leave");
-
+                        var course = joinButton.parents(".class-tab-panel").eq(0).attr("id").substr(13);
+                        var marker = self.markers[course][partyId];
+                        var color = self.getCourseColor(course);
+                        var icon = L.MakiMarkers.icon({icon:"star",color: "#" + color, size: "m"});
+                        marker.setIcon(icon);
                         self.user.party = partyId;
                         $(button).text("Leave");
                     }, error: function(xhr, status, err) {
@@ -392,6 +403,17 @@ window.LoggedInView = Backbone.View.extend({
                                 prevAttendees.text(parseInt(prevAttendees.text())-1);
                                 var prevJoinButton = $("#party-line-"+self.user.party+" .join-party-button", $(self.el));
                                 prevJoinButton.text("Join");
+                            }
+                            if (self.user.party != undefined) {
+                                for (var i=0; i<self.user.courses.length; i++) {
+                                    var course = self.user.courses[i]._id;
+                                    if (self.user.party in self.markers[course]) {
+                                        var marker = self.markers[course][self.user.party];
+                                        var color = self.getCourseColor(course);
+                                        var icon = L.MakiMarkers.icon({color: "#" + color, size: "m"});
+                                        marker.setIcon(icon);
+                                    }
+                                }
                             }
                             self.user.party = party._id;
                             self.refreshTab(courseId, party._id).done(function() {
