@@ -142,3 +142,12 @@ body {
 .alert:empty {
 	display:none;
 }
+
+.join-party-button {
+	cursor:pointer;
+}
+
+.invite-button {
+	cursor:pointer;
+	margin-left:10px;
+}

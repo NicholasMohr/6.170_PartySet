@@ -92,10 +92,46 @@ window.LoggedInView = Backbone.View.extend({
         "click #refresh-map":"refreshMap",
         "click .go-to-party":"goToParty",
         "click .color-palette":"toggleMarkerVisibility",
-        "click .remove-course .glyphicon-remove": "removeCourse"
+        "click .remove-course .glyphicon-remove": "removeCourse",
+        "click .invite-button":"invite"
+    },
+
+    invite: function(e) {
+        this.clearInviteModal();
+        var partyId = $(e.currentTarget).eq(0).attr("id").substr(7);
+        var courseId = $(e.currentTarget).parents(".class-tab-panel").eq(0).attr("id").substr(13);
+        var courseNumber;
+        for (var i=0;i<this.user.courses.length;i++) {
+            if (this.user.courses[i]._id == courseId) {
+                courseNumber = this.user.courses[i].courseNumber;
+                break;
+            }
+        }
+        $("#invite-course-number", $(this.el)).text(courseNumber);
+        $("#invite-modal", $(this.el)).modal("show");
+        var self = this;
+        $("#send-invite-button", $(this.el)).on("click", function() {
+            var inviteList = $("#invite-list", $(self.el)).val().split(/[ ,]+/);
+            for (var i=0; i<inviteList.length; i++) {
+                if (inviteList[i].substr(-8) != "@mit.edu") {
+                    $("#invite-errors", $(self.el)).text("Please use friends' @mit.edu email addresses.");
+                    return;
+                }
+            }
+            $("#invite-modal", $(self.el)).modal("hide");
+            //TODO: make request
+        });
+    },
+
+    clearInviteModal: function() {
+        $("#invite-list", $(this.el)).val("");
+        $("#send-invite-button", $(this.el)).unbind("click");
+        $("#invite-errors", $(this.el)).text("");
     },
 
     toggleMarkerVisibility: function(e) {
+        e.preventDefault();
+        e.stopPropagation();
         var courseId = $(e.target).parents(".class-tab").eq(0).attr("id").substr(10);
         var opacity = this.opacity[courseId];
         if (opacity == 0) {
@@ -204,7 +240,7 @@ window.LoggedInView = Backbone.View.extend({
                         $("#new-party-course-number option[value="+courseId+"]", $(self.el)).remove();
                         $(".class-tab:first", $(self.el)).tab("show");
                         $(".class-tab-panel:first", $(self.el)).addClass("active");
-                        return;
+                        break;
                     }
                 }
             },
@@ -295,18 +331,23 @@ window.LoggedInView = Backbone.View.extend({
     bindJoinButton: function(partyId) {
         var self = this;
         $("#join-"+partyId).on("click", function() {
-            var button = this;
-            if ($(button).text() === "Leave") {
+            var button = $(this);
+            var symbol = $(".glyphicon",$(this));
+            if (symbol.hasClass("glyphicon-log-out")) {
                 $.ajax({
                     type: "DELETE",
                     url: "/parties/"+partyId,
                     success: function() {
                         var attendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
                         attendees.text(parseInt(attendees.text())-1);
-                        var joinButton = $("#party-line-"+partyId+" .join-party-button", $(self.el));
-                        joinButton.text("Join");
+                        var course = button.parents(".class-tab-panel").eq(0).attr("id").substr(13);
+                        self.changeIcon(course, self.user.party, false);
                         self.user.party = undefined;
-                        $(button).text("Join");
+                        symbol.removeClass("glyphicon-log-out").addClass("glyphicon-log-in");
+                        button.tooltip("hide");
+                        button.attr("data-original-title", "Join");
+                        $("#invite-"+partyId, $(self.el)).hide();
+
                     }, error: function(xhr, status, err) {
                         self.newGeneralError(err);
                     }
@@ -321,20 +362,23 @@ window.LoggedInView = Backbone.View.extend({
                             if (prevAttendees.length > 0) {
                                 prevAttendees.text(parseInt(prevAttendees.text()) - 1);
                                 var prevJoinButton = $("#party-line-" + self.user.party + " .join-party-button", $(self.el));
-                                prevJoinButton.text("Join");
+                                $(".glyphicon", prevJoinButton).removeClass("glyphicon-log-out").addClass("glyphicon-log-in");
+                                prevJoinButton.attr("data-original-title", "Join");
                                 var prevCourse = prevJoinButton.parents(".class-tab-panel").eq(0).attr("id").substr(13);
                                 self.changeIcon(prevCourse, self.user.party, false);
+                                $("#invite-"+self.user.party, $(self.el)).hide();
                             }
                         }
 
                         var attendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
                         attendees.text(parseInt(attendees.text())+1);
-                        var joinButton = $("#party-line-"+partyId+" .join-party-button", $(self.el));
-                        joinButton.text("Leave");
-                        var course = joinButton.parents(".class-tab-panel").eq(0).attr("id").substr(13);
+                        symbol.removeClass("glyphicon-log-in").addClass("glyphicon-log-out");
+                        button.tooltip("hide");
+                        button.attr("data-original-title", "Leave");
+                        var course = button.parents(".class-tab-panel").eq(0).attr("id").substr(13);
                         self.changeIcon(course, partyId, true);
+                        $("#invite-"+partyId, $(self.el)).show();
                         self.user.party = partyId;
-                        $(button).text("Leave");
                     }, error: function(xhr, status, err) {
                         self.newGeneralError(err);
                     }
@@ -369,10 +413,14 @@ window.LoggedInView = Backbone.View.extend({
     //returns the new line that contains details about a party
     newPartyLine: function(party) {
         var line = $('<div class="row course-line" id="party-line-'+party._id+'"></div>');
-        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div><div class="col-md-6"><a class="go-to-party" id="go-to-party-'+party._id+'">'+party.location+'</a></div><div class="col-md-4 attendees-column">'+party.attendees+'</div>');
-        var buttonText = "Join";
+        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div>'+
+            '<div class="col-md-6"><a class="go-to-party" id="go-to-party-'+party._id+'">'+party.location+'</a></div>'+
+            '<div class="col-md-4 attendees-column">'+party.attendees+'</div>');
+        var joinType = "log-in";
+        var tooltipText = "Join";
         if (this.user.party == party._id) {
-            buttonText = "Leave";
+            joinType = "log-out";
+            tooltipText = "Leave";
         }
         var date = new Date(party.expireAt);
         var ampm;
@@ -390,8 +438,20 @@ window.LoggedInView = Backbone.View.extend({
             hours = 12;
         }
         var formattedDate = hours+":"+minutes+" "+ampm;
-        var otherContent = $('<div class="party-details"><div class="col-md-6 col-md-offset-1">Ends at '+formattedDate+'</div><div class="col-md-4"><button class="join-party-button btn btn-default" id="join-'+party._id+'">'+buttonText+'</button></div><div class="col-md-10 col-md-offset-1">'+party.details+'</div></div>');
+        var otherContent = $('<div class="party-details">'+
+            '<div class="col-md-6 col-md-offset-1">Ends at '+formattedDate+'</div>'+
+            '<div class="col-md-4">'+
+            '<a id="join-'+party._id+'" class="join-party-button" data-toggle="tooltip" data-placement="bottom" title="'+tooltipText+'"><span class="glyphicon glyphicon-'+joinType+'"></span></a>'+
+            '<a id="invite-'+party._id+'" class="invite-button" data-toggle="tooltip" data-placement="bottom" title="Invite"><span class="glyphicon glyphicon-envelope"></span></a>'+
+            '</div>'+
+            '<div class="col-md-10 col-md-offset-1">'+party.details+'</div>'+
+            '</div>');
+
         line.append(mainContent).append(otherContent);
+        $('.join-party-button, .invite-button', otherContent).tooltip();
+        if (this.user.party != party._id) {
+            $('.invite-button', otherContent).hide();
+        }
         return line;
     },
 
@@ -409,7 +469,7 @@ window.LoggedInView = Backbone.View.extend({
     //if changeColor is true, animate the background color to highlight it
     openPartyDetails: function(partyId, changeColor) {
         var line = $("#party-line-"+partyId, $(this.el));
-        $(".glyphicon", line).removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-down");
+        $(".glyphicon-chevron-right", line).removeClass("glyphicon-chevron-right").addClass("glyphicon-chevron-down");
         line.addClass("expanded");
         var courseId = line.parents(".class-tab-panel").eq(0).attr("id").substr(13);
         var color = this.getCourseColor(courseId);
@@ -422,7 +482,7 @@ window.LoggedInView = Backbone.View.extend({
     //hides a party's details
     closePartyDetails: function(partyId) {
         var line = $("#party-line-"+partyId, $(this.el));
-        $(".glyphicon", line).removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-right");
+        $(".glyphicon-chevron-down", line).removeClass("glyphicon-chevron-down").addClass("glyphicon-chevron-right");
         line.removeClass("expanded");
     },
 
