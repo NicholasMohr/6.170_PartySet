@@ -38,6 +38,11 @@ body {
 	color:#428bca;
 }
 
+#new-party.disabled {
+	color:#999999;
+	cursor:default;
+}
+
 #refresh-map {
 	position:absolute;
 	top:50px;
@@ -91,6 +96,7 @@ body {
 	display:inline-block;
 	margin-right: 5px;
 	border:1px solid black;
+	cursor:pointer;
 }
 
 .course-line {
@@ -104,4 +110,35 @@ body {
 
 .footer {
 	margin-top:10px;
+}
+
+.remove-course {
+	position:absolute;
+	bottom:0px;
+}
+
+.panel-header {
+	font-weight:bold;
+}
+
+#tabpanel {
+	height:450px;
+	position:relative;
+}
+
+#sidebar {
+	height:500px;
+}
+
+#general-errors {
+	bottom:0;
+}
+
+.remove-course .glyphicon-remove {
+	cursor:pointer;
+	margin-right:5px;
+}
+
+.alert:empty {
+	display:none;
 }

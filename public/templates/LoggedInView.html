@@ -6,8 +6,8 @@
 	<div id="map">
 	</div>
 </div>
-<div class="col-md-4">
-	<div role="tabpanel">
+<div class="col-md-4" id="sidebar">
+	<div id="tabpanel" role="tabpanel">
 
 		<!-- Nav tabs -->
 		<ul class="nav nav-tabs" role="tablist" data-tabs="tabs">
@@ -24,10 +24,11 @@
 				<div role="tabpanel" class="class-tab-panel tab-pane" id="course-panel-<%= course._id %>">
 					<div class="container-fluid">
 					<div class="row">
-						<div class="col-md-6 col-md-offset-1">Location</div>
-						<div class="col-md-4">Attendees</div>
+						<div class="col-md-6 col-md-offset-1 panel-header">Location</div>
+						<div class="col-md-4 panel-header">Attendees</div>
 					</div>
 					</div>
+					<div class="remove-course"><span class="glyphicon glyphicon-remove"></span>Remove course from list</div>
 				</div>
 			<% }) %>
 			<div role="tabpanel" class="class-tab-panel tab-pane" id="new-class-panel">
@@ -50,12 +51,13 @@
 							<button id="add-course-button" class="btn btn-default">Add Course</button>
 						</div>
 					</div>
-					<p class="bg-danger" id="add-course-errors"></p>
+					<div class="alert alert-danger" role="alert" id="add-course-errors"></div>
 				</form>
 			</div>
 		</div>
 
 	</div>
+	<div class="alert alert-danger" role="alert" id="general-errors"></div>
 </div>
 
 <div id="new-party-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
@@ -97,6 +99,7 @@
 						</div>
 					</div>
 				</form>
+				<div class="alert alert-danger" role="alert" id="add-party-errors"></div>
 			</div>
 			<div class="modal-footer">
 				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
