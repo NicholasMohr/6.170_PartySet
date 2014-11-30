@@ -18,6 +18,7 @@ var controller = function(){
                 //make the new party- this relies on the req.body names being the same as in model
                 var newParty = new Parties(req.body);
                 newParty.attendees = 1;
+                newParty.host = req.user._id;
                 console.log(req.body);
                 //save the party that I just made
                 newParty.save(function(err,doc){
@@ -89,7 +90,7 @@ var controller = function(){
         getPartyInfo: function(req, res) {
             Parties.findOne({"_id" : req.params.id}, function(err,party){
                 if(err || party ==null){
-                    utils.sendErrResponse(res, 404, 'The project could not be found.');
+                    utils.sendErrResponse(res, 404, 'The party could not be found.');
                 }
                 else{
                     res.json(party);
@@ -180,6 +181,38 @@ var controller = function(){
                 console.log("not at that party!!!!");
                 utils.sendSuccessResponse(res);
             }
+        },
+
+        /*
+            end the party specified if the current user is a host of the specified party
+        */
+        endParty: function(req, res) {
+            console.log("gotinhere")
+            Parties.findOne({"_id": req.params.id}, function(error, party){
+                console.log("gotheretoo")
+                if(error || party ==null){
+                    console.log("no party");
+                    utils.sendErrResponse(res, 404, 'The party could not be found.');
+                }
+                else{
+                    if(String(party.host) === String(req.user._id)){
+                        //the current user is the host of the party id
+                        Parties.remove({"_id":req.params.id}, function(e,docs){
+                            if(e){
+                    console.log("erryo");
+                                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                            }
+                            else{
+                    console.log("successful?");
+                                utils.sendSuccessResponse(res, 'Sucessfully removed party');
+                            }
+                        });
+                    }
+                    else{
+                        utils.sendErrResponse(res,401,'you aren\'t the right user to do that');
+                    }
+                }
+            });
         }
     }
     

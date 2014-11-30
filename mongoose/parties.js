@@ -10,6 +10,7 @@ var partySchema = mongoose.Schema({
     lng: Number,
 	expireAt: Date,
 	attendees: Number,
+	host: {type: Schema.Types.ObjectId, ref: 'Users'},
 	course: {type: Schema.Types.ObjectId, ref: 'Courses'}
 },{collection: "parties"});
 

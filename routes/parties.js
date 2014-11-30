@@ -19,16 +19,24 @@ router.get('/:id', function (req, res) {
     controller.getPartyInfo(req, res);
 });
 
-//TODO: test this
+//TODO: move this to PUT- /users/:id
 //add current user to party
 router.put('/:id', function (req, res) {
     controller.addToParty(req, res);
 });
 
-//TODO: test this
+//TODO: move this to DELETE- /users/:id
 //remove current user from party
 router.delete('/:id', function (req, res) {
     controller.removeFromParty(req, res);    
 });
+
+//TODO: move this to DELETE- /:id
+//remove the party specified by the id
+router.delete('/endparty/:id', function (req, res) {
+    controller.endParty(req, res);    
+});
+
+
 
 module.exports = router;
