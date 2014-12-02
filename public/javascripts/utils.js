@@ -17,5 +17,11 @@ window.utils = {
         });
 
         $.when.apply(null, deferreds).done(callback);
+    },
+
+    loadPiece: function (fileName, viewName, callback) {
+        $.get('templates/' + fileName + '.html', function (data) {
+            window[viewName].prototype[fileName] = _.template(data);
+        }).done(callback);
     }
 };

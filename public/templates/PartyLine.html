@@ -1,0 +1,16 @@
+<div class="row course-line" id="party-line-<%= party._id %>">
+	<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div>
+	<div class="col-md-6"><a class="go-to-party" id="go-to-party-<%= party._id %>"><%= party.location %></a></div>
+	<div class="col-md-4 attendees-column"><%= party.attendees %></div>
+	<div class="party-details">
+		<div class="col-md-6 col-md-offset-1">Ends at <%= formattedDate %></div>
+		<div class="col-md-4 action-icons">
+			<a id="join-<%= party._id %>" class="join-party-button" data-toggle="tooltip" data-placement="bottom" title="<%= tooltipText %>"><span class="glyphicon glyphicon-<%= joinType %>"></span></a>
+			<a id="invite-<%= party._id %>" class="invite-button" data-toggle="tooltip" data-placement="bottom" title="Invite"><span class="glyphicon glyphicon-envelope"></span></a>
+			<% if (party.host == user.id) { %>
+			<a id="end-<%= party._id %>" class="end-button" data-toggle="tooltip" data-placement="bottom" title="End"><span class="glyphicon glyphicon-remove"></span></a>
+			<% } %>
+		</div>
+		<div class="col-md-10 col-md-offset-1"><%= party.details %></div>
+	</div>
+</div>

@@ -93,7 +93,28 @@ window.LoggedInView = Backbone.View.extend({
         "click .go-to-party":"goToParty",
         "click .color-palette":"toggleMarkerVisibility",
         "click .remove-course .glyphicon-remove": "removeCourse",
-        "click .invite-button":"invite"
+        "click .invite-button":"invite",
+        "click .end-button":"endParty"
+    },
+
+    endParty: function(e) {
+        var partyId = $(e.currentTarget).attr("id").substr(4);
+        var courseId = $(e.currentTarget).parents(".class-tab-panel").eq(0).attr("id").substr(13);
+        var self = this;
+        $.ajax({
+            type: "DELETE",
+            url: "/parties/endparty/"+partyId,
+            success: function() {
+                $(e.currentTarget).parents(".course-line").eq(0).remove();
+                self.map.removeLayer(self.markers[courseId][partyId]);
+                delete self.markers[courseId][partyId];
+                if (self.user.party == partyId) {
+                    self.user.party = undefined;
+                }
+            }, error: function( xhr, status, err) {
+                self.newGeneralError(err);
+            }
+        })
     },
 
     invite: function(e) {
@@ -309,8 +330,9 @@ window.LoggedInView = Backbone.View.extend({
                     self.markers[courseId][party._id] = marker;
                     $("#new-party-modal", $(self.el)).modal("hide");
                     self.bindMarkerClick(marker,party._id, courseId);
-                    var partyLine = self.newPartyLine(party);
+                    var partyLine = $(self.newPartyLine(party));
                     $(".container-fluid", tabPanel).append(partyLine);
+                    $('.join-party-button, .invite-button, .end-button', partyLine).tooltip();
                     self.bindJoinButton(party._id, courseId);
                 });
 
@@ -412,10 +434,6 @@ window.LoggedInView = Backbone.View.extend({
 
     //returns the new line that contains details about a party
     newPartyLine: function(party) {
-        var line = $('<div class="row course-line" id="party-line-'+party._id+'"></div>');
-        var mainContent = $('<div class="col-md-1"><span class="glyphicon glyphicon-chevron-right open-party-details"></span></div>'+
-            '<div class="col-md-6"><a class="go-to-party" id="go-to-party-'+party._id+'">'+party.location+'</a></div>'+
-            '<div class="col-md-4 attendees-column">'+party.attendees+'</div>');
         var joinType = "log-in";
         var tooltipText = "Join";
         if (this.user.party == party._id) {
@@ -438,21 +456,13 @@ window.LoggedInView = Backbone.View.extend({
             hours = 12;
         }
         var formattedDate = hours+":"+minutes+" "+ampm;
-        var otherContent = $('<div class="party-details">'+
-            '<div class="col-md-6 col-md-offset-1">Ends at '+formattedDate+'</div>'+
-            '<div class="col-md-4">'+
-            '<a id="join-'+party._id+'" class="join-party-button" data-toggle="tooltip" data-placement="bottom" title="'+tooltipText+'"><span class="glyphicon glyphicon-'+joinType+'"></span></a>'+
-            '<a id="invite-'+party._id+'" class="invite-button" data-toggle="tooltip" data-placement="bottom" title="Invite"><span class="glyphicon glyphicon-envelope"></span></a>'+
-            '</div>'+
-            '<div class="col-md-10 col-md-offset-1">'+party.details+'</div>'+
-            '</div>');
-
-        line.append(mainContent).append(otherContent);
-        $('.join-party-button, .invite-button', otherContent).tooltip();
+        var compiledPartyLine = this.PartyLine({party:party, user:this.user, joinType: joinType, tooltipText: tooltipText, formattedDate: formattedDate});
+        console.log(compiledPartyLine);
+        console.log($('.join-party-button, .invite-button, .end-button', $(compiledPartyLine)));
         if (this.user.party != party._id) {
-            $('.invite-button', otherContent).hide();
+            $('.invite-button', compiledPartyLine).hide();
         }
-        return line;
+        return compiledPartyLine;
     },
 
     //when the arrow is clicked, open or close party details
