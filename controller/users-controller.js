@@ -66,7 +66,7 @@ var controller = function(){
                         Party.findById(req.user.party.toString()).exec(function(err, p){
                             if(p.course == req.params.courseId){
                                 //Remove this person from the party
-                                Parties.findOneAndUpdate({
+                                Party.findOneAndUpdate({
                                         "_id": req.user.party
                                     }, {
                                         $inc: {
@@ -77,7 +77,7 @@ var controller = function(){
                                             utils.sendErrResponse(res, 500, 'An unknown error occurred.');
                                         } else {
                                             //update the user so it contains no party
-                                            Users.update({"_id": req.user._id}, {"party": null}, function (error, document) {
+                                            User.update({"_id": req.user._id}, {"party": null}, function (error, document) {
                                                 if (error) {
                                                     utils.sendErrResponse(res, 500, 'An unknown error occurred.');
                                                 } else {
