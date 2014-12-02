@@ -2,6 +2,8 @@
 
 var express = require('express');
 var router = express.Router();
+var mandrill = require('mandrill-api/mandrill');
+var mandrill_client = new mandrill.Mandrill('R5D9QYNU1F0Iae-uzaa1uA'); // personal mandrill API key;
 
 var Parties = require('../mongoose/parties')
 var Users = require('../mongoose/users')
@@ -212,6 +214,63 @@ var controller = function(){
                         utils.sendErrResponse(res,401,'you aren\'t the right user to do that');
                     }
                 }
+            });
+        },
+
+        /*
+            email invites for specific party to list of users
+        */
+        emailInvite: function(req, res) {
+            // get necessary information for message
+            var invitedParty = null;
+            Parties.findOne({"_id" : req.params.id}, function(err,party){
+                if(err || party ==null){
+                    utils.sendErrResponse(res, 404, 'The party could not be found.');
+                }
+                else{
+                    invitedParty = party;
+                }
+            });
+            
+            var emails = []
+            var i;
+            for (i = 0; i < req.params.emails.length; i++) {
+                var emailData = { "email": req.params.emails[i],
+                                  "name": "Invited Recipient",
+                                  "type": "to"};
+                emails.push(emailData);
+            }
+
+            // actually create message
+            // TODO what to actually put for HTML/text content
+            var message = { "html": "<p>Example HTML content</p>",
+                            "text": "Example text content",
+                            "subject": "PartySet Invite from " + req.user.email,
+                            "from_email": "hyun94@mit.edu",
+                            "from_name": "PartySet Admin",
+                            "to": emails,
+                            "important": false,
+                            "track_opens": null,
+                            "track_clicks": null,
+                            "auto_text": null,
+                            "auto_html": null,
+                            "inline_css": null,
+                            "url_strip_qs": null,
+                            "preserve_recipients": false,
+                            "view_content_link": null,
+                            "tracking_domain": null,
+                            "signing_domain": null,
+                            "return_path_domain": null,
+                            "merge": false
+                    };
+            var async = false;
+            var ip_pool = "Main Pool";
+            var send_at = "0000-00-00 00:00:00"; // send right away
+            mandrill_client.messages.send({"message": message, "async": async, "ip_pool": ip_pool, "send_at": send_at}, function(result) {
+                console.log(result);
+            }, function(e) {
+                // Mandrill returns the error as an object with name and message keys
+                console.log('A mandrill error occurred: ' + e.name + ' - ' + e.message);
             });
         }
     }
