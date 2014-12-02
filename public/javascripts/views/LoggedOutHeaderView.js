@@ -37,7 +37,7 @@ window.LoggedOutHeaderView = Backbone.View.extend({
         } else {
             var self = this;
             $.ajax({
-                url: "/users/login",
+                url: "/sessions/login",
                 type: "POST",
                 data: {username: username, password: password},
                 success: function () {
