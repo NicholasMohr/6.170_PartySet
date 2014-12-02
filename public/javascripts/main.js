@@ -70,7 +70,7 @@ var AppRouter = Backbone.Router.extend({
 });
 
 utils.loadTemplate(['LoggedOutView', 'LoggedOutHeaderView', 'LoggedInView', 'LoggedInHeaderView'], function() {
-    utils.loadPiece("PartyLine", "LoggedInView", function() {
+    utils.loadPieces(["PartyLine", "CoursePanel", "CourseTab"], "LoggedInView", function() {
         app = new AppRouter();
         Backbone.history.start();
     });
