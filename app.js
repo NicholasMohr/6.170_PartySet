@@ -24,6 +24,7 @@ if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
 mongoose.connect(connection_string);
 
 var routes = require('./routes/index');
+var sessions = require('./routes/sessions');
 var users = require('./routes/users');
 var parties = require('./routes/parties');
 var courses = require('./routes/courses')
