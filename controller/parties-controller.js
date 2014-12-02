@@ -235,6 +235,16 @@ var controller = function(){
             var emails = []
             var i;
             for (i = 0; i < req.params.emails.length; i++) {
+                var em = req.params.emails[i].toLowerCase();
+        
+                // check if username is actual email format
+                var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                if (em == '' || !re.test(em)) { return done(null, false, 'Please enter a valid MIT email address.'); }
+
+                // check to see if username is MIT email address
+                if (em.split("@").pop() != "mit.edu") { return done(null, false, 'Please enter a valid MIT email address.'); }
+
+                // add to emails to send
                 var emailData = { "email": req.params.emails[i],
                                   "name": "Invited Recipient",
                                   "type": "to"};
