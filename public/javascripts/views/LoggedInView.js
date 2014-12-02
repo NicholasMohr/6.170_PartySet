@@ -712,6 +712,11 @@ window.LoggedInView = Backbone.View.extend({
     newGeneralError: function(message) {
         var self = this;
 
+        //if something happens like the connection is refused, the error message is empty
+        if (message == "") {
+            message = "An unknown error occured";
+        }
+
         //set the text for the error message and fade it in
         $("#general-errors", $(this.el)).html("<b>Error</b>: "+message).fadeIn();
 
