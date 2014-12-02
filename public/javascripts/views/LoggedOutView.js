@@ -31,7 +31,7 @@ window.LoggedOutView = Backbone.View.extend({
             $("#sign-up-errors", $(this.el)).text("Your password should be at least 7 characters long.");
         } else {
             $.ajax({
-                url: "/users",
+                url: "/sessions",
                 type: "POST",
                 data: {username: username, password: password, name: name},
                 success: function () {

@@ -7,6 +7,8 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var session = require('express-session');
 var passport = require('passport');
+var mandrill = require('mandrill-api/mandrill');
+var mandrill_client = new mandrill.Mandrill('R5D9QYNU1F0Iae-uzaa1uA'); // personal mandrill API key
 
 // default to a 'localhost' configuration:
 //var connection_string = 'localhost:27017/fritter';
@@ -22,6 +24,7 @@ if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
 mongoose.connect(connection_string);
 
 var routes = require('./routes/index');
+var sessions = require('./routes/sessions');
 var users = require('./routes/users');
 var parties = require('./routes/parties');
 var courses = require('./routes/courses')
@@ -52,6 +55,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', routes);
+app.use('/sessions', sessions);
 app.use('/users', users);
 app.use('/parties', parties);
 app.use('/courses', courses)

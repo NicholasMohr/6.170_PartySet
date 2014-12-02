@@ -37,6 +37,11 @@ router.delete('/endparty/:id', function (req, res) {
     controller.endParty(req, res);    
 });
 
+// invite a list of users to party
+router.put('/:id/invite', function (req, res) {
+	controller.emailInvite(req, res);
+});
+
 
 
 module.exports = router;
