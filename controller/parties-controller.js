@@ -261,7 +261,7 @@ var controller = function(){
                                             "<li>Details: " + party.details + "</li>" +
                                             "<li>Ends At: " + party.expireAt.toString() + "</li>" +
                                             "</ul>" +
-                                            "<p>You should come to! Visit <a href='http://project4-nmohr.rhcloud.com'>here</a>.</p>",
+                                            "<p>You should come, too! Visit <a href='http://project4-nmohr.rhcloud.com'>here</a>.</p>",
                                     "subject": "PartySet Invite",
                                     "from_email": req.user.email,
                                     "from_name": req.user.name,
