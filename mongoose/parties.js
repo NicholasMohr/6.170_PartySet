@@ -5,7 +5,7 @@ var Schema = mongoose.Schema;
 
 var partySchema = mongoose.Schema({
 	location: {type: String, required: true},
-	details: {type: String, required: true},
+	details: String,
 	lat: {type: Number, required: true},
     lng: {type: Number, required: true},
 	expireAt: {type: Date, required: true},
