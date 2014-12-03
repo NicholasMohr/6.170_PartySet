@@ -487,8 +487,8 @@ window.LoggedInView = Backbone.View.extend({
                         data: {
                             expireAt:endTime,
                             course:$("#new-party-course-number", $(self.el)).val(),
-                            location:$( "#new-party-location", $(self.el)).val(),
-                            details:$( "#new-party-details", $(self.el)).val(),
+                            location:_.escape($( "#new-party-location", $(self.el)).val()),
+                            details: _.escape($( "#new-party-details", $(self.el)).val()),
                             lat: coords.lat,
                             lng: coords.lng
                         }, success: function(partyResponse) {
