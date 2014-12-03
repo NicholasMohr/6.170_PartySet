@@ -27,7 +27,7 @@ router.put('/courses/:courseId', function(req, res){
 	controller.addClassToUser(req, res);
 });
 
-/* PUT a class removed from a specific user */
+/* DELETE a class from a specific user */
 router.delete('/courses/:courseId', function(req, res){
 	controller.removeClassFromUser(req, res);
 });

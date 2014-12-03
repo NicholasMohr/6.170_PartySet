@@ -70,7 +70,7 @@ var controller = function(){
                 });
             }
             else{
-                //TODO:send err response
+                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
             }
         },
 
