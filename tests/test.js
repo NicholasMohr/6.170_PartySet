@@ -52,17 +52,17 @@ var party;
 $.ajax({
     method:"POST",
     url:"/parties",
-    data: {
-        expireAt:Date.now + 2000,
+    async: false,
+	data: {
+        expireAt:(Date.now() + 2000),
         course:course._id,
         location:"here",
         details:"now",
         lat: 0,
         lng: 0
-    }
-    async: false,
+    },
     success: function(response){
-    	party = response;
+    	party = response.content;
     }
 });
 
@@ -97,7 +97,7 @@ $.ajax({
             async: false,
 
             success: function(response) {
-            	parties 
+            	//check that there is only one party with the description I made
             }
 });
 //check that there's just one party
@@ -113,5 +113,5 @@ $.ajax({
 $.ajax({
     method:"DELETE",
     async: false,
-    url:"/users/"+course._id
+    url:"/users/courses/"+course._id
 });

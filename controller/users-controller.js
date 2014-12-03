@@ -62,34 +62,38 @@ var controller = function(){
                     if (error) {
                         utils.sendErrResponse(res, 500, 'An unknown error occurred.');
                     } else {
-                        Party.findById(req.user.party.toString()).exec(function(err, p){
-                            if(p.course == req.params.courseId){
-                                //Remove this person from the party
-                                Party.findOneAndUpdate({
-                                        "_id": req.user.party
-                                    }, {
-                                        $inc: {
-                                            attendees: -1
-                                        }
-                                    }, function (error, document) {
-                                        if (error) {
-                                            utils.sendErrResponse(res, 500, 'An unknown error occurred.');
-                                        } else {
-                                            //update the user so it contains no party
-                                            User.update({"_id": req.user._id}, {"party": null}, function (error, document) {
-                                                if (error) {
-                                                    utils.sendErrResponse(res, 500, 'An unknown error occurred.');
-                                                } else {
-                                                    req.user.party = null;
-                                                    utils.sendSuccessResponse(res);
-                                                }
-                                            });
-                                        }
-                                    }
+                        console.log(req.user.party)
+                        if(req.user.party){
+                            Party.findById(req.user.party.toString()).exec(function(err, p){
 
-                                );
-                            }
-                        });
+                                if(p && p.course == req.params.courseId){
+                                    //Remove this person from the party
+                                    Party.findOneAndUpdate({
+                                            "_id": req.user.party
+                                        }, {
+                                            $inc: {
+                                                attendees: -1
+                                            }
+                                        }, function (error, document) {
+                                            if (error) {
+                                                utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                                            } else {
+                                                //update the user so it contains no party
+                                                User.update({"_id": req.user._id}, {"party": null}, function (error, document) {
+                                                    if (error) {
+                                                        utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                                                    } else {
+                                                        req.user.party = null;
+                                                        utils.sendSuccessResponse(res);
+                                                    }
+                                                });
+                                            }
+                                        }
+
+                                    );
+                                }
+                            });
+                        }
                     }
                 }
             );
