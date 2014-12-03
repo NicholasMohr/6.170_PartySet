@@ -140,7 +140,7 @@ window.LoggedInView = Backbone.View.extend({
         var self = this;
         $.ajax({
             type: "DELETE",
-            url: "/parties/endparty/"+partyId,
+            url: "/parties/"+partyId,
             success: function() {
                 $(e.currentTarget).parents(".course-line").eq(0).remove();
                 self.map.removeLayer(self.markers[courseId][partyId]);
@@ -250,7 +250,7 @@ window.LoggedInView = Backbone.View.extend({
             var courseNumber = $(courseSelect.getOption(courseId)).text();
             $.ajax({
                 type:"PUT",
-                url:"/users/"+courseId,
+                url:"/users/courses/"+courseId,
                 success: function() {
                     //add to the local list of courses
                     self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
@@ -296,8 +296,8 @@ window.LoggedInView = Backbone.View.extend({
         var tab = $("#class-tab-"+courseId, $(this.el));
         var self = this;
         $.ajax({
-            type:"PUT",
-            url:"/users/delete/"+courseId,
+            type:"DELETE",
+            url:"/users/courses/"+courseId,
             success: function() {
                 //show the first tab and delete this one
                 $(".class-tab:first", $(self.el)).tab("show");
@@ -354,7 +354,7 @@ window.LoggedInView = Backbone.View.extend({
         if (symbol.hasClass("glyphicon-log-out")) {
             $.ajax({
                 type: "DELETE",
-                url: "/parties/"+partyId,
+                url: "/parties/"+partyId+"/users",
                 success: function() {
                     //subtract one from the attendees display
                     var attendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
@@ -384,7 +384,7 @@ window.LoggedInView = Backbone.View.extend({
         else {
             $.ajax({
                 type: "PUT",
-                url: "/parties/"+partyId,
+                url: "/parties/"+partyId+"/users",
                 success: function() {
                     //if they're in another party to begin with, remove them from that party
                     if (self.user.party != undefined) {
