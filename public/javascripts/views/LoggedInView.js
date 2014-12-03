@@ -177,7 +177,7 @@ window.LoggedInView = Backbone.View.extend({
         $("#send-invite-button", $(this.el)).on("click", function() {
             //parse the inputted list of emails
             //they should be separated by some combination of commas and spaces
-            var inviteList = $("#invite-list", $(self.el)).val().split(/[ ,]+/);
+            var inviteList = _.escape($("#invite-list", $(self.el)).val()).split(/[ ,]+/);
             for (var i=0; i<inviteList.length; i++) {
                 //if one of them isn't an mit email, show an error
                 if (inviteList[i].substr(-8) != "@mit.edu") {
@@ -186,7 +186,18 @@ window.LoggedInView = Backbone.View.extend({
                 }
             }
             $("#invite-modal", $(self.el)).modal("hide");
-            //TODO: make request
+            $.ajax({
+                type: "POST",
+                url: "/parties/"+partyId+"/invite",
+                data: {
+                    courseNumber: courseNumber,
+                    emails: inviteList
+                }, success: function() {
+
+                }, error: function(xhr, status, err) {
+                    self.newGeneralError(err);
+                }
+            });
         });
     },
 
