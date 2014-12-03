@@ -223,7 +223,7 @@ var controller = function(){
         emailInvite: function(req, res) {
             // get necessary information for message
             var invitedParty = null;
-            Parties.findOne({"_id" : req.params.id}, function(err,party){
+            Parties.findById(req.params.id).populate('course').exec(function (err,party){
                 if(err || party ==null){
                     utils.sendErrResponse(res, 404, 'The party could not be found.');
                 }
@@ -253,11 +253,17 @@ var controller = function(){
 
             // actually create message
             // TODO what to actually put for HTML/text content
-            var message = { "html": "<p>Example HTML content</p>",
-                            "text": "Example text content",
-                            "subject": "PartySet Invite from " + req.user.email,
-                            "from_email": "hyun94@mit.edu",
-                            "from_name": "PartySet Admin",
+            var message = { "html": "<p>I'm going to a pset party for:</p>" +
+                                    "<ul>" +
+                                    "<li>Class: " + req.params.courseNumber + "</li>" +
+                                    "<li>Location: " + invitedParty.location + "</li>" + 
+                                    "<li>Details: " + invitedParty.details + "</li>" +
+                                    "<li>Ends At: " + invitedParty.expiresAt + "</li>" +
+                                    "</ul>" +
+                                    "<p>You should come to! Visit <a href='http://project4-nmohr.rhcloud.com'>here</a>.</p>",
+                            "subject": "PartySet Invite",
+                            "from_email": req.user.email,
+                            "from_name": req.user.name,
                             "to": emails,
                             "important": false,
                             "track_opens": null,

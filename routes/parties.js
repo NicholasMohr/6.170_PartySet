@@ -38,7 +38,7 @@ router.delete('/:id', function (req, res) {
 });
 
 // invite a list of users to party
-router.put('/:id/invite', function (req, res) {
+router.post('/:id/invite', function (req, res) {
 	controller.emailInvite(req, res);
 });
 
