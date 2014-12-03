@@ -23,12 +23,12 @@ var isLoggedInOrInvalidBody = function (req, res) {
 };
 
 /* PUT a class listed for a specific user */
-router.put('/:courseId', function(req, res){
+router.put('/courses/:courseId', function(req, res){
 	controller.addClassToUser(req, res);
 });
 
 /* PUT a class removed from a specific user */
-router.put('/delete/:courseId', function(req, res){
+router.delete('/courses/:courseId', function(req, res){
 	controller.removeClassFromUser(req, res);
 });
 

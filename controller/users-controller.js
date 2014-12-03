@@ -29,7 +29,6 @@ var controller = function(){
             Add a class to a user
         */
         addClassToUser: function(req, res) {
-            // var Users = models.Users;
             console.log(req.user._id);
             console.log(req.params.courseId);
             User.findOneAndUpdate({
@@ -52,7 +51,7 @@ var controller = function(){
             Remove a class from a user
         */
         removeClassFromUser: function(req, res) {
-            // var Users = models.Users;
+            //take the course out of users courses
             User.findOneAndUpdate({
                     "_id": req.user._id
                 }, {

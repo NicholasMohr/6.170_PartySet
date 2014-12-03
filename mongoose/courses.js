@@ -3,7 +3,7 @@
 var mongoose = require('mongoose');
 
 var courseSchema = mongoose.Schema({
-	courseNumber: String
+	courseNumber: {type: String, required: true},
 },{collection: "courses"});
 
 
