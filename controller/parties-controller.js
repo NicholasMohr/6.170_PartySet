@@ -256,10 +256,10 @@ var controller = function(){
                     // actually create message
                     var message = { "html": "<p>I'm going to a pset party for:</p>" +
                                             "<ul>" +
-                                            "<li>Class: " + req.params.courseNumber + "</li>" +
+                                            "<li>Class: " + req.body.courseNumber + "</li>" +
                                             "<li>Location: " + party.location + "</li>" + 
                                             "<li>Details: " + party.details + "</li>" +
-                                            "<li>Ends At: " + String(party.expiresAt) + "</li>" +
+                                            "<li>Ends At: " + party.expireAt.toString() + "</li>" +
                                             "</ul>" +
                                             "<p>You should come to! Visit <a href='http://project4-nmohr.rhcloud.com'>here</a>.</p>",
                                     "subject": "PartySet Invite",
