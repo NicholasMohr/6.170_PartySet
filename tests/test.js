@@ -1,4 +1,6 @@
 //Primary author: Nick
+//To test, copy paste into terminal when at localhost
+
 //sessions
 /*
 only run this one your first time testing
