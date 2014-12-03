@@ -140,7 +140,7 @@ window.LoggedInView = Backbone.View.extend({
         var self = this;
         $.ajax({
             type: "DELETE",
-            url: "/parties/endparty/"+partyId,
+            url: "/parties/"+partyId,
             success: function() {
                 $(e.currentTarget).parents(".course-line").eq(0).remove();
                 self.map.removeLayer(self.markers[courseId][partyId]);
@@ -177,7 +177,11 @@ window.LoggedInView = Backbone.View.extend({
         $("#send-invite-button", $(this.el)).on("click", function() {
             //parse the inputted list of emails
             //they should be separated by some combination of commas and spaces
-            var inviteList = $("#invite-list", $(self.el)).val().split(/[ ,]+/);
+            var inviteList = _.escape($("#invite-list", $(self.el)).val()).split(/[ ,]+/);
+            if (inviteList.length == 0) {
+                $("#invite-errors", $(self.el)).text("Please enter one or more valid email addresses.");
+                return;
+            }
             for (var i=0; i<inviteList.length; i++) {
                 //if one of them isn't an mit email, show an error
                 if (inviteList[i].substr(-8) != "@mit.edu") {
@@ -185,8 +189,20 @@ window.LoggedInView = Backbone.View.extend({
                     return;
                 }
             }
+            console.log(inviteList);
             $("#invite-modal", $(self.el)).modal("hide");
-            //TODO: make request
+            $.ajax({
+                type: "POST",
+                url: "/parties/"+partyId+"/invite",
+                data: {
+                    courseNumber: courseNumber,
+                    emails: inviteList
+                }, success: function() {
+
+                }, error: function(xhr, status, err) {
+                    self.newGeneralError(err);
+                }
+            });
         });
     },
 
@@ -250,7 +266,7 @@ window.LoggedInView = Backbone.View.extend({
             var courseNumber = $(courseSelect.getOption(courseId)).text();
             $.ajax({
                 type:"PUT",
-                url:"/users/"+courseId,
+                url:"/users/courses/"+courseId,
                 success: function() {
                     //add to the local list of courses
                     self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
@@ -296,8 +312,8 @@ window.LoggedInView = Backbone.View.extend({
         var tab = $("#class-tab-"+courseId, $(this.el));
         var self = this;
         $.ajax({
-            type:"PUT",
-            url:"/users/delete/"+courseId,
+            type:"DELETE",
+            url:"/users/courses/"+courseId,
             success: function() {
                 //show the first tab and delete this one
                 $(".class-tab:first", $(self.el)).tab("show");
@@ -354,7 +370,7 @@ window.LoggedInView = Backbone.View.extend({
         if (symbol.hasClass("glyphicon-log-out")) {
             $.ajax({
                 type: "DELETE",
-                url: "/parties/"+partyId,
+                url: "/parties/"+partyId+"/users",
                 success: function() {
                     //subtract one from the attendees display
                     var attendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
@@ -384,7 +400,7 @@ window.LoggedInView = Backbone.View.extend({
         else {
             $.ajax({
                 type: "PUT",
-                url: "/parties/"+partyId,
+                url: "/parties/"+partyId+"/users",
                 success: function() {
                     //if they're in another party to begin with, remove them from that party
                     if (self.user.party != undefined) {
@@ -462,6 +478,9 @@ window.LoggedInView = Backbone.View.extend({
                 self.clearNewParty();
                 $("#new-party-modal", $(self.el)).modal("show");
 
+                var currentCourse = $(".class-tab-panel.active", $(self.el)).attr("id").substr(13);
+                $("#new-party-course-number", $(self.el)).val(currentCourse);
+
                 //when the submit button is clicked in the modal
                 $("#add-party-button", $(self.el)).on("click", function () {
                     //verify all necessary fields are filled in
@@ -487,8 +506,8 @@ window.LoggedInView = Backbone.View.extend({
                         data: {
                             expireAt:endTime,
                             course:$("#new-party-course-number", $(self.el)).val(),
-                            location:$( "#new-party-location", $(self.el)).val(),
-                            details:$( "#new-party-details", $(self.el)).val(),
+                            location:_.escape($( "#new-party-location", $(self.el)).val()),
+                            details: _.escape($( "#new-party-details", $(self.el)).val()),
                             lat: coords.lat,
                             lng: coords.lng
                         }, success: function(partyResponse) {
@@ -711,6 +730,11 @@ window.LoggedInView = Backbone.View.extend({
     //show an error message
     newGeneralError: function(message) {
         var self = this;
+
+        //if something happens like the connection is refused, the error message is empty
+        if (message == "") {
+            message = "An unknown error occured";
+        }
 
         //set the text for the error message and fade it in
         $("#general-errors", $(this.el)).html("<b>Error</b>: "+message).fadeIn();
