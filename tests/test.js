@@ -1,5 +1,7 @@
 //Primary author: Nick
 //sessions
+/*
+only run this one your first time testing
 $.ajax({
     url: '/sessions/',
     type: 'POST',
@@ -9,7 +11,7 @@ $.ajax({
             'password': 'testuser1' 
     }
 });
-
+*/
 $.ajax({
     url: '/sessions/logout',
     type: 'POST',
@@ -85,7 +87,12 @@ $.ajax({
     async: false,
     url:"/parties/"+party._id,
     success: function(response){
-    	//check equality to original info
+    	console.log(response.course == course._id)
+    	console.log(response.location == "here")
+    	console.log(response.details == "now")
+    	console.log(response.lat == 0)
+    	console.log(response.lng == 0)
+//check equality to original info
     }
 });
 
@@ -97,10 +104,9 @@ $.ajax({
             async: false,
 
             success: function(response) {
-            	//check that there is only one party with the description I made
+            	console.log(response.length == 1)
             }
 });
-//check that there's just one party
 
 
 //close that party
