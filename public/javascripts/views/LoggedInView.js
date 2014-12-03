@@ -178,6 +178,10 @@ window.LoggedInView = Backbone.View.extend({
             //parse the inputted list of emails
             //they should be separated by some combination of commas and spaces
             var inviteList = _.escape($("#invite-list", $(self.el)).val()).split(/[ ,]+/);
+            if (inviteList.length == 0) {
+                $("#invite-errors", $(self.el)).text("Please enter one or more valid email addresses.");
+                return;
+            }
             for (var i=0; i<inviteList.length; i++) {
                 //if one of them isn't an mit email, show an error
                 if (inviteList[i].substr(-8) != "@mit.edu") {
@@ -185,6 +189,7 @@ window.LoggedInView = Backbone.View.extend({
                     return;
                 }
             }
+            console.log(inviteList);
             $("#invite-modal", $(self.el)).modal("hide");
             $.ajax({
                 type: "POST",
@@ -472,6 +477,9 @@ window.LoggedInView = Backbone.View.extend({
                 //make sure the modal is cleared and show it
                 self.clearNewParty();
                 $("#new-party-modal", $(self.el)).modal("show");
+
+                var currentCourse = $(".class-tab-panel.active", $(self.el)).attr("id").substr(13);
+                $("#new-party-course-number", $(self.el)).val(currentCourse);
 
                 //when the submit button is clicked in the modal
                 $("#add-party-button", $(self.el)).on("click", function () {
