@@ -222,15 +222,20 @@ var controller = function(){
             email invites for specific party to list of users
         */
         emailInvite: function(req, res) {
+            console.log("email");
             Parties.findOne({"_id": req.params.id}, function (err, party) {
                 if(err || party == null) {
                     utils.sendErrResponse(res, 404, 'The party could not be found.');
                 } else {
-                    var emails = []
-                    if (Array.isArray(req.body['emails[]'])) {
+                    var emails = [];
+                    var emailString = 'emails[]';
+                    if (process.env.OPENSHIFT_MONGODB_DB_PASSWORD) {
+                        emailString = 'emails';
+                    }
+                    if (Array.isArray(req.body[emailString])) {
                         var i;
-                        for (i = 0; i < req.body['emails[]'].length; i++) {
-                            var em = req.body['emails[]'][i].toLowerCase();
+                        for (i = 0; i < req.body[emailString].length; i++) {
+                            var em = req.body[emailString][i].toLowerCase();
                     
                             // check if username is actual email format
                             var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -240,14 +245,14 @@ var controller = function(){
                             if (em.split("@").pop() != "mit.edu") { utils.sendErrResponse(res, 400, 'Please enter a valid MIT email address.'); }
 
                             // add to emails to send
-                            var emailData = { "email": req.body['emails[]'][i].toLowerCase(),
+                            var emailData = { "email": req.body[emailString][i].toLowerCase(),
                                               "name": "Invited Recipient",
                                               "type": "to"};
                             emails.push(emailData);
                         }
                     } else {
                         // add to emails to send
-                        var emailData = { "email": req.body['emails[]'].toLowerCase(),
+                        var emailData = { "email": req.body[emailString].toLowerCase(),
                                           "name": "Invited Recipient",
                                           "type": "to"};
                         emails.push(emailData);
