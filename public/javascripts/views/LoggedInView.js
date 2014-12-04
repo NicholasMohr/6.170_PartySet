@@ -18,6 +18,8 @@ window.LoggedInView = Backbone.View.extend({
         $('[data-toggle="tooltip"]', $(this.el)).tooltip();
         this.addingParty = false;
 
+        $("#removal-notification", $(this.el)).hide();
+
         //keep a dictionary of markers
         this.markers = {};
         for (var i=0; i<this.user.courses.length; i++) {
@@ -143,7 +145,7 @@ window.LoggedInView = Backbone.View.extend({
             self.map.removeLayer(self.markers[courseId][partyId]);
             delete self.markers[courseId][partyId];
             if (self.user.party == partyId) {
-                //TODO: notification
+                $("#removal-notification", $(self.el)).show()
                 self.user.party = undefined;
             }
         });
