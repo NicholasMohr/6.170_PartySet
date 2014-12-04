@@ -33,6 +33,7 @@ window.LoggedInView = Backbone.View.extend({
         $(".class-tab-panel:first", $(this.el)).addClass("active");
 
         this.initializeSlider();
+
         $('#add-new-course', $(this.el)).selectize({
             create: true,
             sortField: 'text'
@@ -45,6 +46,8 @@ window.LoggedInView = Backbone.View.extend({
 
         this.initializeMap();
 
+        this.initializeSocket();
+
         return this;
     },
 
@@ -53,7 +56,6 @@ window.LoggedInView = Backbone.View.extend({
         "click #add-course-button":"addNewCourse",
         "click #new-class-tab":"clearAddNewCourse",
         "click .open-party-details":"openPartyDetailsClick",
-        "click #refresh-map":"refreshMap",
         "click .go-to-party":"goToParty",
         "click .color-palette":"toggleMarkerVisibility",
         "click .remove-course .glyphicon-remove": "removeCourse",
@@ -127,6 +129,36 @@ window.LoggedInView = Backbone.View.extend({
 
         //load all the parties
         this.refreshMap();
+    },
+
+    initializeSocket: function() {
+        var self = this;
+        socket.on("new party", function(party){
+            self.addNewParty(party);
+        });
+        socket.on('remove party', function(partyId){
+            var party = $("#party-line-"+partyId, $(self.el));
+            var courseId = party.parents(".class-tab-panel").eq(0).attr("id").substr(13);
+            party.remove();
+            self.map.removeLayer(self.markers[courseId][partyId]);
+            delete self.markers[courseId][partyId];
+            if (self.user.party == partyId) {
+                //TODO: notification
+                self.user.party = undefined;
+            }
+        });
+        socket.on('join party', function(partyId){
+            var prevAttendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
+            if (prevAttendees.length > 0) {
+                prevAttendees.text(parseInt(prevAttendees.text()) + 1);
+            }
+        });
+        socket.on('leave party', function(partyId){
+            var prevAttendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
+            if (prevAttendees.length > 0) {
+                prevAttendees.text(parseInt(prevAttendees.text()) - 1);
+            }
+        });
     },
 
     /*********
@@ -523,7 +555,7 @@ window.LoggedInView = Backbone.View.extend({
                                 var prevAttendees = $("#party-line-"+self.user.party+" .attendees-column", $(self.el));
                                 prevAttendees.text(parseInt(prevAttendees.text())-1);
                                 var prevJoinButton = $("#party-line-"+self.user.party+" .join-party-button", $(self.el));
-                                prevJoinButton.text("Join");
+                                $(".glyphicon", prevJoinButton).removeClass("glyphicon-log-out").addClass("glyphicon-log-in");
                                 for (var i=0; i<self.user.courses.length; i++) {
                                     var course = self.user.courses[i]._id;
                                     if (self.user.party in self.markers[course]) {
@@ -532,12 +564,11 @@ window.LoggedInView = Backbone.View.extend({
                                 }
                             }
                             self.user.party = party._id;
-                            //refresh the tab then navigate to the tab
-                            self.refreshTab(courseId, party._id).done(function() {
-                                $("#class-tab-"+courseId, $(self.el)).tab("show");
-                                $(".class-tab-panel", $(self.el)).removeClass("active");
-                                $("#course-panel-"+courseId, $(self.el)).addClass("active");
-                            });
+                            self.addNewParty(party,courseId);
+                            $("#class-tab-"+courseId, $(self.el)).tab("show");
+                            $(".class-tab-panel", $(self.el)).removeClass("active");
+                            $("#course-panel-"+courseId, $(self.el)).addClass("active");
+                            $("#new-party-modal", $(self.el)).modal("hide");
                         }, error: function(xhr, status, err) {
                             self.newGeneralError(err);
                         }
@@ -555,6 +586,50 @@ window.LoggedInView = Backbone.View.extend({
     /******
      * Event helpers
      */
+
+    addNewParty: function(party) {
+        for (var i=0; i<this.user.courses.length; i++) {
+            if (party.course == this.user.courses[i]._id) {
+                var courseId = this.user.courses[i]._id;
+                var line = this.addPartyToList(party, courseId);
+                this.addPartyToMap(party, courseId);
+                var color = this.getCourseColor(courseId);
+                line.css("background-color", color);
+                line.animate({backgroundColor: ""}, 1000);
+                break;
+            }
+        }
+
+    },
+
+    addPartyToList: function(party, courseId) {
+        var partyLine = $(this.newPartyLine(party));
+        var tabPanel = $("#course-panel-"+courseId, $(this.el));
+        $(".container-fluid", tabPanel).append(partyLine);
+
+        //hide the invite button if the user is not in the party
+        if (this.user.party != party._id) {
+            $('.invite-button', partyLine).hide();
+        }
+        $('.join-party-button, .invite-button, .end-button', partyLine).tooltip();
+        return partyLine;
+    },
+
+    addPartyToMap: function(party, courseId) {
+        var latLng = L.latLng(party.lat, party.lng);
+        var color = this.getCourseColor(courseId);
+        var opacity = this.opacity[courseId];
+        var icon;
+        if (this.user.party == party._id) {
+            icon = L.MakiMarkers.icon({icon:"star", color: color, size: "m"});
+        } else {
+            icon = L.MakiMarkers.icon({color: color, size: "m"});
+        }
+        var marker = L.marker(latLng, {clickable: true, icon: icon, opacity:opacity});
+        marker.addTo(this.map);
+        this.markers[courseId][party._id] = marker;
+        this.bindMarkerClick(marker,party._id, courseId);
+    },
 
     //upon adding a new marker, bind an event to it
     bindMarkerClick: function(marker, partyId, courseId) {
@@ -641,12 +716,10 @@ window.LoggedInView = Backbone.View.extend({
     //refreshes a course's parties in the tab and on the map
     refreshTab: function(courseId, partyId) {
         //find the panel and empty it
-        var tabPanel = $("#course-panel-"+courseId, $(this.el));
-        $(".course-line", tabPanel).remove();
+        $("#course-panel-"+courseId+" .course-line", $(this.el)).remove();
         var tab = $("#class-tab-"+courseId, $(this.el));
 
-        //prepare colors for the tabs and for visible markers
-        var color = this.getCourseColor(courseId);
+        //prepare colors for the tabs
         var opacity = this.opacity[courseId];
         var cssColor = this.getCourseColor(courseId, opacity);
         $(".color-palette", tab).css("background-color", cssColor);
@@ -657,33 +730,15 @@ window.LoggedInView = Backbone.View.extend({
             url:"/courses/"+courseId,
             success: function(parties) {
                 //delete all markers that were on the map for the course before refresh
-                for (var party in self.markers[courseId]) {
-                    self.map.removeLayer(self.markers[courseId][party]);
+                for (var tempPartyId in self.markers[courseId]) {
+                    self.map.removeLayer(self.markers[courseId][tempPartyId]);
                 }
 
                 //add a new marker for each party found
                 self.markers[courseId] = {};
                 _.each(parties, function(party) {
-                    var latLng = L.latLng(party.lat, party.lng);
-                    var icon;
-                    if (self.user.party == party._id) {
-                        icon = L.MakiMarkers.icon({icon:"star", color: color, size: "m"});
-                    } else {
-                        icon = L.MakiMarkers.icon({color: color, size: "m"});
-                    }
-                    var marker = L.marker(latLng, {clickable: true, icon: icon, opacity:opacity});
-                    marker.addTo(self.map);
-                    self.markers[courseId][party._id] = marker;
-                    $("#new-party-modal", $(self.el)).modal("hide");
-                    self.bindMarkerClick(marker,party._id, courseId);
-                    var partyLine = $(self.newPartyLine(party));
-                    $(".container-fluid", tabPanel).append(partyLine);
-
-                    //hide the invite button if the user is not in the party
-                    if (self.user.party != party._id) {
-                        $('.invite-button', partyLine).hide();
-                    }
-                    $('.join-party-button, .invite-button, .end-button', partyLine).tooltip();
+                    self.addPartyToList(party, courseId);
+                    self.addPartyToMap(party, courseId);
                 });
 
                 //if the party id was passed in, then this party was just created

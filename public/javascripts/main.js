@@ -71,6 +71,7 @@ var AppRouter = Backbone.Router.extend({
 
 utils.loadTemplate(['LoggedOutView', 'LoggedOutHeaderView', 'LoggedInView', 'LoggedInHeaderView'], function() {
     utils.loadPieces(["PartyLine", "CoursePanel", "CourseTab"], "LoggedInView", function() {
+        socket = io("http://localhost:3001");
         app = new AppRouter();
         Backbone.history.start();
     });
