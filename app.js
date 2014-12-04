@@ -31,6 +31,37 @@ var courses = require('./routes/courses')
 
 var app = express();
 
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+
+//app.get('/', function(req, res){
+  //res.sendfile('index.html');
+//});
+
+io.on('connection', function(socket){
+  console.log('a user connected');
+  socket.on('disconnect', function(){
+    console.log('user disconnected');
+  });
+  socket.on('new party', function(party){
+    socket.broadcast.emit('new party', party);
+  });
+  socket.on('remove party', function(partyId){
+    socket.broadcast.emit('remove party', partyId);
+  });
+  socket.on('join party', function(partyId){
+    socket.broadcast.emit('join party', partyId);
+  });
+  socket.on('leave party', function(partyId){
+    socket.broadcast.emit('leave party', partyId);
+  });
+
+});
+
+http.listen(3001, function(){
+  console.log('listening on *:3001');
+});
+
 var db = mongoose.connection;
 db.collection("parties", function(err, coll){
     coll.ensureIndex({expireAt: 1}, {expireAfterSeconds: 0});

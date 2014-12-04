@@ -142,6 +142,7 @@ window.LoggedInView = Backbone.View.extend({
             type: "DELETE",
             url: "/parties/"+partyId,
             success: function() {
+                socket.emit("remove party", partyId);
                 $(e.currentTarget).parents(".course-line").eq(0).remove();
                 self.map.removeLayer(self.markers[courseId][partyId]);
                 delete self.markers[courseId][partyId];
@@ -372,6 +373,7 @@ window.LoggedInView = Backbone.View.extend({
                 type: "DELETE",
                 url: "/parties/"+partyId+"/users",
                 success: function() {
+                    socket.emit('leave party', partyId);
                     //subtract one from the attendees display
                     var attendees = $("#party-line-"+partyId+" .attendees-column", $(self.el));
                     attendees.text(parseInt(attendees.text())-1);
@@ -402,8 +404,10 @@ window.LoggedInView = Backbone.View.extend({
                 type: "PUT",
                 url: "/parties/"+partyId+"/users",
                 success: function() {
+                    socket.emit('join party', partyId);
                     //if they're in another party to begin with, remove them from that party
                     if (self.user.party != undefined) {
+                        socket.emit('leave party', self.user.party);
                         var prevAttendees = $("#party-line-"+self.user.party+" .attendees-column", $(self.el));
                         if (prevAttendees.length > 0) {
                             prevAttendees.text(parseInt(prevAttendees.text()) - 1);
@@ -512,8 +516,10 @@ window.LoggedInView = Backbone.View.extend({
                             lng: coords.lng
                         }, success: function(partyResponse) {
                             var party = partyResponse.content;
+                            socket.emit('new party', party);
                             //if the user was already in a party, remove them from it and add them to the new one
                             if (self.user.party != undefined) {
+                                socket.emit('leave party', self.user.party);
                                 var prevAttendees = $("#party-line-"+self.user.party+" .attendees-column", $(self.el));
                                 prevAttendees.text(parseInt(prevAttendees.text())-1);
                                 var prevJoinButton = $("#party-line-"+self.user.party+" .join-party-button", $(self.el));
