@@ -59,14 +59,16 @@ var controller = function(){
                         courses: req.params.courseId
                     }
                 }, function (error, document) {
+                    console.log("removed course");
                     if (error) {
                         utils.sendErrResponse(res, 500, 'An unknown error occurred.');
                     } else {
-                        console.log(req.user.party)
+                        console.log("not an error")
                         if(req.user.party){
                             Party.findById(req.user.party.toString()).exec(function(err, p){
-
-                                if(p && p.course == req.params.courseId){
+                                if (err) {
+                                    utils.sendErrResponse(res, 500, 'An unknown error occurred.');
+                                } else if(p && p.course == req.params.courseId){
                                     //Remove this person from the party
                                     Party.findOneAndUpdate({
                                             "_id": req.user.party
@@ -91,8 +93,12 @@ var controller = function(){
                                         }
 
                                     );
+                                } else {
+                                    utils.sendSuccessResponse(res);
                                 }
                             });
+                        } else {
+                            utils.sendSuccessResponse(res);
                         }
                     }
                 }

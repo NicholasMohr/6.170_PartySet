@@ -342,7 +342,7 @@ window.LoggedInView = Backbone.View.extend({
     //on clicking the remove course button at the bottom of a panel,
     //get rid of the tab
     removeCourse: function(e) {
-        var panel = $(e.target).parents(".class-tab-panel").eq(0);
+        var panel = $(e.currentTarget).parents(".class-tab-panel").eq(0);
         var courseId = panel.attr("id").substr(13);
         var tab = $("#class-tab-"+courseId, $(this.el));
         var self = this;
