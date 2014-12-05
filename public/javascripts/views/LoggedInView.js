@@ -351,10 +351,10 @@ window.LoggedInView = Backbone.View.extend({
             url:"/users/courses/"+courseId,
             success: function() {
                 //show the first tab and delete this one
-                $(".class-tab:first", $(self.el)).tab("show");
-                $(".class-tab-panel:first", $(self.el)).addClass("active");
                 tab.remove();
                 panel.remove();
+                $(".class-tab:first", $(self.el)).tab("show");
+                $(".class-tab-panel:first", $(self.el)).addClass("active");
 
                 //find the course in the local list of courses and delete it
                 for (var i=0; i<self.user.courses.length; i++) {
@@ -558,15 +558,18 @@ window.LoggedInView = Backbone.View.extend({
                                 prevAttendees.text(parseInt(prevAttendees.text())-1);
                                 var prevJoinButton = $("#party-line-"+self.user.party+" .join-party-button", $(self.el));
                                 $(".glyphicon", prevJoinButton).removeClass("glyphicon-log-out").addClass("glyphicon-log-in");
+                                prevJoinButton.attr("data-original-title", "Join");
                                 for (var i=0; i<self.user.courses.length; i++) {
                                     var course = self.user.courses[i]._id;
                                     if (self.user.party in self.markers[course]) {
                                         self.changeIcon(course,self.user.party,false);
                                     }
                                 }
+                                $("#invite-"+self.user.party, $(self.el)).hide();
                             }
                             self.user.party = party._id;
                             self.addNewParty(party,courseId);
+                            self.openPartyDetails(party._id, false);
                             $("#class-tab-"+courseId, $(self.el)).tab("show");
                             $(".class-tab-panel", $(self.el)).removeClass("active");
                             $("#course-panel-"+courseId, $(self.el)).addClass("active");
