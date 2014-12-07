@@ -10,18 +10,20 @@ var passport = require('passport');
 var mandrill = require('mandrill-api/mandrill');
 var mandrill_client = new mandrill.Mandrill('R5D9QYNU1F0Iae-uzaa1uA'); // personal mandrill API key
 
-// default to a 'localhost' configuration:
-//var connection_string = 'localhost:27017/fritter';
-var connection_string = 'mongodb://localhost/partyset';
-// if OPENSHIFT env variables are present, use the available connection info:
-if(process.env.OPENSHIFT_MONGODB_DB_PASSWORD){
-    connection_string = process.env.OPENSHIFT_MONGODB_DB_USERNAME + ":" +
-        process.env.OPENSHIFT_MONGODB_DB_PASSWORD + "@" +
-        process.env.OPENSHIFT_MONGODB_DB_HOST + ':' +
-        process.env.OPENSHIFT_MONGODB_DB_PORT + '/' +
-        process.env.OPENSHIFT_APP_NAME;
-}
-mongoose.connect(connection_string);
+var uristring =
+    process.env.MONGOLAB_URI ||
+    process.env.MONGOHQ_URL ||
+    'mongodb://localhost/partyset';
+
+console.log("mongo on ", uristring);
+
+mongoose.connect(uristring, function (err, res) {
+    if (err) {
+        console.log ('ERROR connecting to: ' + uristring + '. ' + err);
+    } else {
+        console.log ('Succeeded connected to: ' + uristring);
+    }
+});
 
 var routes = require('./routes/index');
 var sessions = require('./routes/sessions');
@@ -31,8 +33,19 @@ var courses = require('./routes/courses')
 
 var app = express();
 
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+app.set('port', process.env.PORT || 3000);
+var debug = require('debug')('cjholz_jessmand_hyun94_nmohr_finalProj');
+var server = app.listen(app.get('port'), function() {
+    debug('Express server listening on port ' + server.address().port);
+});
+
+var io = require('socket.io')({
+    "transports": ["xhr-polling"],
+    "polling duration": 10
+}).listen(server);
+
+/*var http = require('http').Server(app);
+var io = require('socket.io').listen(http);*/
 
 //app.get('/', function(req, res){
   //res.sendfile('index.html');
@@ -58,9 +71,9 @@ io.on('connection', function(socket){
 
 });
 
-http.listen(3001, function(){
+/*http.listen(3001, function(){
   console.log('listening on *:3001');
-});
+});*/
 
 var db = mongoose.connection;
 db.collection("parties", function(err, coll){
