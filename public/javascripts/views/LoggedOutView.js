@@ -8,11 +8,34 @@ window.LoggedOutView = Backbone.View.extend({
 
     render: function () {
         $(this.el).html(this.template());
+        this.initializeCarousel();
         return this;
     },
 
     events:  {
         "click #sign-up-button" : "signUp"
+    },
+
+    initializeCarousel: function() {
+        var caption = $("#screenshot-caption", $(this.el));
+        var captionList = ["Add the MIT courses you're currently taking",
+                           "Host a new party or join one already happening",
+                           "Browse through existing parties to meet new people, help, and get help"
+        ];
+        caption.text(captionList[0]);
+        $(".screenshot", $(this.el)).hide();
+        var n=-1;
+        $(".screenshot:nth-child(1)", $(this.el)).show().css("display", "block");
+        var self = this;
+        setInterval(function() {
+            n+=1;
+            $(".screenshot:nth-child("+((n%3)+1)+"), #screenshot-caption", $(self.el)).hide("slide", { direction: "left" }, 500, function() {
+                caption.text(captionList[(n+1)%3]);
+                $(".screenshot:nth-child("+(((n+1)%3)+1)+"), #screenshot-caption", $(self.el)).show("slide", { direction: "right" }, 500);
+
+            });
+
+        }, 5000);
     },
 
     signUp: function(e) {

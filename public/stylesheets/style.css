@@ -205,3 +205,23 @@ body {
 	background-color:#127887;
 	border-color:#127887;
 }
+
+
+
+.screenshot {
+	width:75%;
+	margin-right:auto;
+	margin-left:auto;
+	border: 5px solid black;
+	border-radius:5px;
+	display:block;
+}
+
+#screenshot-caption {
+	text-align:center;
+	height:100px;
+}
+
+#about {
+	padding-top:20px;
+}
