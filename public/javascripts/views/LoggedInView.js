@@ -5,7 +5,7 @@ window.LoggedInView = Backbone.View.extend({
     initialize: function (options) {
         this.user = options.user;
         this.courses = options.courses;
-        this.colors = [{r:214,g:81,b:139,hex:"d6518b"}, {r:173,g:216,b:199,hex:"abd8c7"}, {r:22,g:147,b:165,hex:"1693a5"}, {r:11,g:72,b:107,hex:"0b486b"}, {r:255,g:112,b:52,hex:"ff7034"}, {r:255,g:61,b:74,hex:"ff3d4a"}, {r:247,g:249,b:114,hex:"f9f772"}, {r:150,g:207,b:234,hex:"96cfea"}];
+        this.colors = [{r:214,g:81,b:139,hex:"d6518b",taken:false}, {r:173,g:216,b:199,hex:"abd8c7",taken:false}, {r:22,g:147,b:165,hex:"1693a5",taken:false}, {r:11,g:72,b:107,hex:"0b486b",taken:false}, {r:255,g:112,b:52,hex:"ff7034",taken:false}, {r:255,g:61,b:74,hex:"ff3d4a",taken:false}, {r:247,g:249,b:114,hex:"f9f772",taken:false}, {r:150,g:207,b:234,hex:"96cfea",taken:false}];
         this.opacity = {};
         this.currentErrorTimeout = undefined;
         this.render();
@@ -29,6 +29,14 @@ window.LoggedInView = Backbone.View.extend({
         //if the user has no courses the add party button should be disabled
         if (this.user.courses.length == 0) {
             $("#new-party", $(this.el)).addClass("disabled");
+        }
+
+        for (var i=0; i<this.user.courses.length; i++) {
+            this.user.courses[i].color = this.colors[i];
+            if (i>=this.colors.length) {
+                this.newGeneralError("Too many courses added");
+            }
+            this.colors[i].taken = true;
         }
 
         $(".class-tab:first", $(this.el)).tab("show");
@@ -303,8 +311,21 @@ window.LoggedInView = Backbone.View.extend({
                 type:"PUT",
                 url:"/users/courses/"+courseId,
                 success: function() {
+                    var color;
+                    for (var i=0; i<self.colors.length; i++) {
+                        if (self.colors[i].taken == false) {
+                            color = self.colors[i];
+                            self.colors[i].taken = true;
+                            break;
+                        }
+                    }
+                    if (color == undefined) {
+                        self.newGeneralError("Too many courses added.");
+                        return;
+                    }
+
                     //add to the local list of courses
-                    self.user.courses.push({"_id":courseId,"courseNumber":courseNumber});
+                    self.user.courses.push({"_id":courseId,"courseNumber":courseNumber, "color":color});
                     //if the new party button was disabled it shouldn't be anymore
                     $("#new-party", $(self.el)).removeClass("disabled");
                     //opacity starts at 1, parties are visible
@@ -360,6 +381,8 @@ window.LoggedInView = Backbone.View.extend({
                 for (var i=0; i<self.user.courses.length; i++) {
                     if (self.user.courses[i]["_id"] == courseId) {
                         var courseNumber = self.user.courses[i]["courseNumber"];
+                        self.user.courses[i].color.taken = false;
+
                         self.user.courses.splice(i, 1);
 
                         //update any course selects
@@ -765,7 +788,14 @@ window.LoggedInView = Backbone.View.extend({
 
     //get the color for a given courseId and opacity from a predefined list of colors
     getCourseColor: function(courseId, opacity) {
-        var color = this.colors[this.user.courses.map(function(course) { return course._id; }).indexOf(courseId)];
+        var color;
+        for (var i=0; i<this.user.courses.length; i++) {
+            if (this.user.courses[i]["_id"] == courseId) {
+                color = this.user.courses[i].color;
+                break;
+            }
+        }
+        //var color = this.colors[this.user.courses.map(function(course) { return course._id; }).indexOf(courseId)];
 
         //if opacity is specified return an rgba version (for css things)
         if (opacity !== undefined) {
