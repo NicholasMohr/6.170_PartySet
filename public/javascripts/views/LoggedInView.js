@@ -5,7 +5,7 @@ window.LoggedInView = Backbone.View.extend({
     initialize: function (options) {
         this.user = options.user;
         this.courses = options.courses;
-        this.colors = [{r:255,g:0,b:0,hex:"FF0000"}, {r:0,g:0,b:255,hex:"0000FF"}, {r:0,g:255,b:0,hex:"00FF00"}, {r:255,g:255,b:0,hex:"FFFF00"}, {r:255,g:0,b:255,hex:"FF00FF"}, {r:0,g:255,b:255,hex:"00FFFF"}];
+        this.colors = [{r:214,g:81,b:139,hex:"d6518b"}, {r:173,g:184,b:199,hex:"abd8c7"}, {r:22,g:147,b:165,hex:"1693a5"}, {r:11,g:72,b:107,hex:"0b486b"}, {r:255,g:112,b:52,hex:"ff7034"}, {r:255,g:61,b:74,hex:"ff3d4a"}, {r:247,g:249,b:114,hex:"f9f772"}, {r:150,g:207,b:234,hex:"96cfea"}];
         this.opacity = {};
         this.currentErrorTimeout = undefined;
         this.render();
@@ -102,7 +102,7 @@ window.LoggedInView = Backbone.View.extend({
         this.map = L.map(mapContainer, {
             minZoom: 1,
             maxZoom: 5,
-            center: [-160, 290],
+            center: [-170, 310],
             crs: L.CRS.Simple,
             zoom:3
         });

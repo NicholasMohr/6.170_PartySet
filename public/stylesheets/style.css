@@ -12,11 +12,11 @@
 }
 
 body {
-	padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+	padding-top: 100px; /* 60px to make the container go all the way to the bottom of the topbar */
 }
 
 #map {
-	height: 500px;
+	height: 400px;
 	z-index:0;
 }
 
@@ -35,7 +35,13 @@ body {
 	font-size:30px;
 	z-index:1;
 	cursor:pointer;
-	color:#428bca;
+	color:#731075;
+	outline-color:#731075;
+}
+
+#new-party:hover {
+	color: #420943;
+	outline-color:#420943;
 }
 
 #new-party.disabled {
@@ -98,12 +104,12 @@ body {
 }
 
 #tabpanel {
-	height:450px;
+	height:350px;
 	position:relative;
 }
 
 #sidebar {
-	height:500px;
+	height:400px;
 }
 
 #general-errors {
@@ -131,4 +137,71 @@ body {
 .end-button {
 	cursor:pointer;
 	margin-left:10px;
+}
+
+a {
+	color: #731075;
+	outline-color:#731075;
+}
+
+a:hover {
+	color: #420943;
+	outline-color:#420943;
+}
+
+.navbar {
+	background-color:#420943;
+}
+
+.navbar a, .navbar a.navbar-brand {
+	color:white;
+}
+
+.navbar .navbar-text {
+	color:white;
+	margin-top:50px;
+}
+
+.navbar .navbar-brand {
+	height:80px;
+}
+
+.navbar .navbar-brand img {
+	height: 50px;
+}
+
+body {
+	font-family: 'Ubuntu', sans-serif;
+}
+
+.open-party-details {
+	color:#731075;
+}
+
+.open-party-details:hover {
+	color:#420943;
+}
+
+.remove-course span {
+	color:#731075;
+}
+
+.remove-course span:hover {
+	color:#420943;
+}
+
+.form-control:focus {
+	border-color: rgba(115, 16, 117, 0.8);
+	box-shadow: 0 1px 1px rgba(0, 0, 0, 0.075) inset, 0 0 8px rgba(115, 16, 117, 0.6);
+	outline: 0 none;
+}
+
+.btn-primary {
+	background-color:#1693A5;
+	border-color:#127887;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+	background-color:#127887;
+	border-color:#127887;
 }
